@@ -1,5 +1,17 @@
 [
   {
+    "id": 1789939591994,
+    "category": "prochee",
+    "title": "тест2",
+    "desc": "123456 прикол",
+    "price": "555",
+    "images": [
+      "images/prod_1789939589684_1.jpg",
+      "images/prod_1789939589684_2.jpg",
+      "images/prod_1789939589684_3.jpg"
+    ]
+  },
+  {
     "id": 1789939195369,
     "category": "prochee",
     "title": "тест 1",
