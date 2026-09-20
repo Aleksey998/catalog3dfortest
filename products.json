@@ -1,5 +1,16 @@
 [
   {
+    "id": 1789939195369,
+    "category": "prochee",
+    "title": "тест 1",
+    "desc": "343434545",
+    "price": "400",
+    "images": [
+      "images/prod_1789939193389_1.jpg",
+      "images/prod_1789939193389_2.jpg"
+    ]
+  },
+  {
     "id": 1789155370609,
     "category": "prochee",
     "title": "Услуги моделирования и 3D печати",
