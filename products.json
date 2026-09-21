@@ -1,5 +1,17 @@
 [
   {
+    "id": 1789984818729,
+    "category": "auto",
+    "title": "тест 3",
+    "desc": "ввававав",
+    "price": "5656565",
+    "images": [
+      "images/prod_1789984814494_1.jpg",
+      "images/prod_1789984814494_2.jpg",
+      "images/prod_1789984814494_3.jpg"
+    ]
+  },
+  {
     "id": 1789939591994,
     "category": "prochee",
     "title": "тест2",
