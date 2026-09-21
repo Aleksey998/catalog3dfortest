@@ -1623,28 +1623,28 @@
       const rawPrice = item ? String(item.price).replace(/[^\d\s.,]/g, '').trim() : '';
       const title = item ? item.title : '';
       const orderMsg = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${title}" за ${rawPrice} рублей. Подскажите по срокам изготовления.`;
-      const fallbackUrl = `https://t.me/${TG_USERNAME}?text=${encodeURIComponent(orderMsg)}`;
+      
+      const directBotUrl = `https://t.me/${TG_USERNAME}?text=${encodeURIComponent(orderMsg)}`;
 
-      // Если запущено внутри Telegram Mini App
+      // 1. Если открыто внутри Telegram Mini App
       if (window.Telegram && window.Telegram.WebApp) {
-        try {
-          if (navigator.clipboard) {
-            navigator.clipboard.writeText(orderMsg).catch(() => {});
-          }
+        const tg = window.Telegram.WebApp;
 
-          const shareLink = `https://t.me/share/url?url=&text=${encodeURIComponent(orderMsg)}`;
+        // Копируем в буфер на случай, если клиент Telegram заблокирует автоподстановку
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(orderMsg).catch(() => {});
+        }
 
-          if (typeof window.Telegram.WebApp.openTelegramLink === 'function') {
-            window.Telegram.WebApp.openTelegramLink(shareLink);
-            return;
-          }
-        } catch (err) {
-          console.warn('Telegram share link error:', err);
+        // Если в BotFather включен обработчик web_app_data — отправляем напрямую боту
+        // Иначе открываем прямую ссылку на бота через нативный метод
+        if (typeof tg.openTelegramLink === 'function') {
+          tg.openTelegramLink(directBotUrl);
+          return;
         }
       }
 
-      // Если в обычном браузере
-      window.open(fallbackUrl, '_blank');
+      // 2. Если в обычном браузере
+      window.open(directBotUrl, '_blank');
     };
 
     initCatalog();
