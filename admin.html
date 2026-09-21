@@ -1615,16 +1615,16 @@
       productsSha = data.content.sha;
     }
 
-    let statusAutoClearTimer = null;
-
     function showStatus(type, msg) {
-      clearTimeout(statusAutoClearTimer);
+      if (window.statusAutoClearTimer) {
+        clearTimeout(window.statusAutoClearTimer);
+      }
       statusMsg.className = `status-msg ${type}`;
       statusMsg.textContent = msg;
       statusMsg.style.display = 'block';
 
       if (type === 'success') {
-        statusAutoClearTimer = setTimeout(() => {
+        window.statusAutoClearTimer = setTimeout(() => {
           hideStatus();
         }, 5000);
       }
