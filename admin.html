@@ -856,10 +856,17 @@
       }
     }
 
-    // Автопроверка при старте
-    if (tokenInput.value && ownerInput.value && repoInput.value) {
-      loadAllData();
-      verifyAllCredentials();
+    // Автопроверка при старте: сначала открываем интерфейс и грузим товары, потом фоном проверяем API
+    if (tokenInput.value.trim() && ownerInput.value.trim() && repoInput.value.trim()) {
+      (async () => {
+        // Сразу открываем рабочие блоки, если ключи сохранены
+        catBox.style.display = 'block';
+        editorBox.style.display = 'block';
+        listBox.style.display = 'block';
+
+        await loadAllData();
+        verifyAllCredentials();
+      })();
     }
 
     // Кнопка сохранения и проверки настроек
