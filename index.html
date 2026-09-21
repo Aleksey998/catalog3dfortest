@@ -1629,27 +1629,30 @@
         const orderText = decodeURIComponent(textParam);
         const tg = window.Telegram.WebApp;
 
-        // 1. Пробуем открыть напрямую через Telegram (сработает при открытии из списка чатов/канала)
-        try {
-          if (typeof tg.openTelegramLink === 'function') {
-            tg.openTelegramLink(tgBtn.href);
-          }
-        } catch (err) {
-          console.warn('openTelegramLink error:', err);
-        }
-
-        // 2. Если мы внутри кнопки Menu у поля ввода — ссылка глушится клиентом.
-        // Поэтому для подстраховки копируем текст только здесь:
+        // Копируем текст в буфер
         if (navigator.clipboard) {
           navigator.clipboard.writeText(orderText).catch(() => {});
         }
 
-        // Показываем уведомление, но НЕ убиваем апп через tg.close(), 
-        // чтобы шторка осталась живой и её можно было просто смахнуть вниз
+        // Показываем аккуратное всплывающее окно
+        const alertMsg = 'Текст заказа скопирован! Вставьте его в поле ввода чата.';
+
+        const afterAlertAction = () => {
+          // 1. Пробуем штатно свернуть в нижнюю плашку (Bot API 7.7+)
+          if (typeof tg.minimize === 'function') {
+            tg.minimize();
+          } 
+          // 2. Если клиент старый и не знает minimize — просто закрываем шторку
+          else if (typeof tg.close === 'function') {
+            tg.close();
+          }
+        };
+
         if (typeof tg.showAlert === 'function') {
-          tg.showAlert('Текст заказа скопирован в буфер! Смахните шторку вниз и вставьте текст в чат.');
+          tg.showAlert(alertMsg, afterAlertAction);
         } else {
-          alert('Текст заказа скопирован! Смахните шторку вниз и вставьте текст в чат.');
+          alert(alertMsg);
+          afterAlertAction();
         }
 
         return;
