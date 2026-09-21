@@ -1125,7 +1125,7 @@
             <span class="price-value">${rawPrice} ₽</span>
           </div>
           <div class="actions">
-            <a href="${tgLink}" class="btn btn-tg" onclick="handleTgOrder(event, ${item.id})">Заказать в Telegram</a>
+            <a href="${tgLink}" target="_blank" class="btn btn-tg">Заказать в Telegram</a>
             <a href="${instLink}" target="_blank" class="btn btn-inst">Заказать в Instagram</a>
           </div>
         </div>
@@ -1303,7 +1303,7 @@
                 <span class="price-value">${rawPrice} ₽</span>
               </div>
               <div class="actions">
-                <a href="${tgLink}" class="btn btn-tg" onclick="handleTgOrder(event, ${item.id})">Заказать в Telegram</a>
+                <a href="${tgLink}" target="_blank" class="btn btn-tg">Заказать в Telegram</a>
                 <a href="${instLink}" target="_blank" class="btn btn-inst">Заказать в Instagram</a>
               </div>
             </div>
@@ -1616,36 +1616,28 @@
       }
     }, { passive: true });
 
-    window.handleTgOrder = function(event, productId) {
-      if (event) event.preventDefault();
+    document.addEventListener('click', (e) => {
+      const tgBtn = e.target.closest('a.btn-tg');
+      if (!tgBtn) return;
 
-      const item = products.find(p => p.id === productId);
-      const rawPrice = item ? String(item.price).replace(/[^\d\s.,]/g, '').trim() : '';
-      const title = item ? item.title : '';
-      const orderMsg = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${title}" за ${rawPrice} рублей. Подскажите по срокам изготовления.`;
-      
-      const directBotUrl = `https://t.me/${TG_USERNAME}?text=${encodeURIComponent(orderMsg)}`;
+      const url = new URL(tgBtn.href);
+      const textParam = url.searchParams.get('text');
 
-      // 1. Если открыто внутри Telegram Mini App
-      if (window.Telegram && window.Telegram.WebApp) {
-        const tg = window.Telegram.WebApp;
-
-        // Копируем в буфер на случай, если клиент Telegram заблокирует автоподстановку
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(orderMsg).catch(() => {});
+      // Если мы внутри Telegram Mini App
+      if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
+        // Копируем текст заказа в буфер обмена, чтобы юзер мог сразу вставить его, если клиент Telegram заартачится
+        if (textParam && navigator.clipboard) {
+          navigator.clipboard.writeText(decodeURIComponent(textParam)).catch(() => {});
         }
 
-        // Если в BotFather включен обработчик web_app_data — отправляем напрямую боту
-        // Иначе открываем прямую ссылку на бота через нативный метод
-        if (typeof tg.openTelegramLink === 'function') {
-          tg.openTelegramLink(directBotUrl);
-          return;
+        // Если есть метод openTelegramLink — открываем через него
+        if (typeof window.Telegram.WebApp.openTelegramLink === 'function') {
+          e.preventDefault();
+          window.Telegram.WebApp.openTelegramLink(tgBtn.href);
         }
       }
-
-      // 2. Если в обычном браузере
-      window.open(directBotUrl, '_blank');
-    };
+      // В обычном браузере на сайте событие сработает штатно как стандартная ссылка <a target="_blank">
+    });
 
     initCatalog();
   </script>
