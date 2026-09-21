@@ -1601,14 +1601,26 @@
       productsSha = data.content.sha;
     }
 
+    let statusAutoClearTimer = null;
+
     function showStatus(type, msg) {
+      clearTimeout(statusAutoClearTimer);
       statusMsg.className = `status-msg ${type}`;
       statusMsg.textContent = msg;
+      statusMsg.style.display = 'block'; // Принудительно сбрасываем display: none
+
+      // Если это сообщение об успехе — плавно скрываем его через 5 секунд
+      if (type === 'success') {
+        statusAutoClearTimer = setTimeout(() => {
+          hideStatus();
+        }, 5000);
+      }
     }
 
     function hideStatus() {
       statusMsg.className = 'status-msg';
       statusMsg.style.display = 'none';
+      statusMsg.textContent = '';
     }
   </script>
 </body>
