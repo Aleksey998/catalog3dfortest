@@ -31,22 +31,85 @@
       justify-content: space-between;
       align-items: center;
     }
+
+    .form-title-clickable {
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.2s;
+    }
+    .form-title-clickable:hover {
+      color: #4ade80;
+    }
     
-    .btn-toggle {
+    .btn-toggle-arrow {
       background: #27272a;
       border: 1px solid #3f3f46;
       color: #9ca3af;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 18px;
       cursor: pointer;
-      font-weight: normal;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
       transition: all 0.2s;
+      flex-shrink: 0;
     }
-    .btn-toggle:hover { color: #fff; border-color: #4ade80; }
+    .btn-toggle-arrow:hover { 
+      color: #fff; 
+      border-color: #4ade80;
+      background: #333;
+    }
 
     .form-group { margin-bottom: 14px; }
     label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: #9ca3af; }
+    
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    .input-wrapper input {
+      padding-right: 42px !important;
+    }
+    .input-status-icon {
+      position: absolute;
+      right: 12px;
+      width: 22px;
+      height: 22px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      border-radius: 50%;
+      user-select: none;
+      pointer-events: auto;
+      cursor: help;
+    }
+    .input-status-icon.valid {
+      display: flex;
+      background: rgba(74, 222, 128, 0.15);
+      border: 1px solid #4ade80;
+      color: #4ade80;
+    }
+    .input-status-icon.invalid {
+      display: flex;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid #ef4444;
+      color: #ef4444;
+    }
+    .input-status-icon.checking {
+      display: flex;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid #3b82f6;
+      color: #60a5fa;
+      font-size: 11px;
+    }
+
     input[type="text"], input[type="password"], textarea, select {
       width: 100%; padding: 10px 12px; background: #141414; border: 1px solid #3f3f46;
       border-radius: 6px; color: #fff; font-size: 14px; outline: none;
@@ -61,7 +124,7 @@
       padding: 10px 16px; border: none; border-radius: 6px; font-weight: 700;
       font-size: 13px; cursor: pointer; transition: all 0.2s;
     }
-    .btn-green { background: #16a34a; color: #fff; width: 100%; }
+    .btn-green { background: #16a34a; color: #fff; }
     .btn-green:hover { background: #15803d; }
     .btn-cancel { background: #3f3f46; color: #fff; display: none; }
     .btn-cancel:hover { background: #52525b; }
@@ -69,6 +132,12 @@
     .btn-edit:hover { background: #1d4ed8; }
     .btn-del { background: #dc2626; color: #fff; padding: 6px 12px; font-size: 12px; }
     .btn-del:hover { background: #b91c1c; }
+
+    /* Кнопка отправки формы товара (ПК: компактная) */
+    .btn-submit-product {
+      width: auto;
+      min-width: 180px;
+    }
 
     /* Кнопки порядка разделов */
     .btn-move {
@@ -282,32 +351,66 @@
       flex-wrap: wrap; 
     }
 
-    /* Чекбокс Telegram справа от кнопки */
+    /* Строка действий формы */
+    .submit-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .submit-btn-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* Увеличенный чекбокс и 2-строчный текст */
     .tg-publish-label {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #f3f4f6;
+      gap: 12px;
       cursor: pointer;
       user-select: none;
-      white-space: nowrap;
     }
     .tg-publish-label input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
       cursor: pointer;
       accent-color: #2563eb;
+      flex-shrink: 0;
     }
-    .tg-bot-badge {
-      color: #4ade80;
+    .tg-publish-texts {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .tg-publish-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f3f4f6;
+      line-height: 1.2;
+    }
+    .tg-publish-target {
       font-size: 12px;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1.2;
+    }
+    .tg-target-badge {
+      color: #4ade80;
       font-weight: 700;
       background: rgba(74, 222, 128, 0.12);
       border: 1px solid rgba(74, 222, 128, 0.3);
-      padding: 2px 6px;
+      padding: 1px 6px;
       border-radius: 4px;
+    }
+    .tg-target-warn {
+      color: #f59e0b;
+      font-size: 11px;
     }
     
     /* Адаптив для мобилок */
@@ -338,7 +441,20 @@
       }
       .submit-actions-row {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        gap: 14px;
+      }
+      .submit-btn-wrap {
+        width: 100%;
+        flex-direction: column;
+      }
+      .btn-submit-product {
+        width: 100%;
+      }
+      .tg-publish-label {
+        width: 100%;
+        padding-top: 6px;
+        border-top: 1px dashed #2a2a2a;
       }
     }
 
@@ -353,39 +469,54 @@
     <h1>Панель управления Pogodin_3d</h1>
 
     <div class="panel-box">
-      <div class="form-title">
+      <div class="form-title form-title-clickable" id="authHeaderClickable" title="Нажмите, чтобы свернуть или развернуть">
         <span>🔑 Доступ к GitHub и Telegram</span>
-        <button type="button" class="btn-toggle" id="btnToggleAuth">Свернуть ▲</button>
+        <button type="button" class="btn-toggle-arrow" id="btnToggleAuth">▲</button>
       </div>
 
       <div id="authContent">
         <div class="form-group">
           <label>Personal Access Token GitHub (classic, права repo):</label>
-          <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+          <div class="input-wrapper">
+            <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+            <span class="input-status-icon" id="status_ghToken" title=""></span>
+          </div>
         </div>
         <div class="row">
           <div class="col form-group">
             <label>Логин GitHub (Owner):</label>
-            <input type="text" id="ghOwner" placeholder="Твой ник на GitHub">
+            <div class="input-wrapper">
+              <input type="text" id="ghOwner" placeholder="Твой ник на GitHub">
+              <span class="input-status-icon" id="status_ghOwner" title=""></span>
+            </div>
           </div>
           <div class="col form-group">
             <label>Имя репозитория (Repo):</label>
-            <input type="text" id="ghRepo" placeholder="Название репозитория">
+            <div class="input-wrapper">
+              <input type="text" id="ghRepo" placeholder="Название репозитория">
+              <span class="input-status-icon" id="status_ghRepo" title=""></span>
+            </div>
           </div>
         </div>
 
         <div class="row" style="margin-top: 6px; padding-top: 12px; border-top: 1px dashed #2a2a2a;">
           <div class="col form-group">
             <label>Токен Telegram-бота (из BotFather):</label>
-            <input type="password" id="tgToken" placeholder="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ">
+            <div class="input-wrapper">
+              <input type="password" id="tgToken" placeholder="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ">
+              <span class="input-status-icon" id="status_tgToken" title=""></span>
+            </div>
           </div>
           <div class="col form-group">
             <label>Публичный канал (юзернейм или ID):</label>
-            <input type="text" id="tgChannel" placeholder="@pogodin_3d_channel">
+            <div class="input-wrapper">
+              <input type="text" id="tgChannel" placeholder="@pogodin_3d_channel">
+              <span class="input-status-icon" id="status_tgChannel" title=""></span>
+            </div>
           </div>
         </div>
 
-        <button class="btn btn-green" id="btnConnect" style="background:#2563eb; margin-top: 6px;">Подключиться и сохранить настройки</button>
+        <button class="btn btn-green" id="btnConnect" style="background:#2563eb; width:100%; margin-top: 6px;">Проверить и сохранить настройки</button>
       </div>
     </div>
 
@@ -448,16 +579,20 @@
           <input type="file" id="prodFiles" accept="image/*" multiple>
         </div>
 
-        <div class="submit-actions-row" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-          <div style="display:flex; gap:10px; flex: 1; min-width: 220px;">
-            <button type="submit" class="btn btn-green" id="submitBtn">Выложить товар</button>
+        <div class="submit-actions-row">
+          <div class="submit-btn-wrap">
+            <button type="submit" class="btn btn-green btn-submit-product" id="submitBtn">Выложить товар</button>
             <button type="button" class="btn btn-cancel" id="cancelEditBtn">Отмена</button>
           </div>
           
           <label class="tg-publish-label" id="tgCheckboxContainer">
             <input type="checkbox" id="tgPublishCheck" checked>
-            <span>Опубликовать в Telegram-канал</span>
-            <span class="tg-bot-badge" id="tgBotBadge" style="display:none;"></span>
+            <div class="tg-publish-texts">
+              <span class="tg-publish-title">Опубликовать в Telegram</span>
+              <span class="tg-publish-target" id="tgPublishTargetDesc">
+                <span class="tg-target-warn">Проверка бота и канала...</span>
+              </span>
+            </div>
           </label>
         </div>
       </form>
@@ -493,6 +628,7 @@
     const btnConnect = document.getElementById('btnConnect');
 
     const authContent = document.getElementById('authContent');
+    const authHeaderClickable = document.getElementById('authHeaderClickable');
     const btnToggleAuth = document.getElementById('btnToggleAuth');
 
     const catBox = document.getElementById('catBox');
@@ -515,7 +651,7 @@
     const statusMsg = document.getElementById('statusMsg');
 
     const tgPublishCheck = document.getElementById('tgPublishCheck');
-    const tgBotBadge = document.getElementById('tgBotBadge');
+    const tgPublishTargetDesc = document.getElementById('tgPublishTargetDesc');
     
     const prodFiles = document.getElementById('prodFiles');
     const imagesContainer = document.getElementById('imagesContainer');
@@ -538,6 +674,9 @@
     let formImages = [];
     let imagesToDeleteFromGithub = [];
 
+    let verifiedBotUsername = '';
+    let verifiedChannelTitle = '';
+
     // Загрузка сохраненных данных
     tokenInput.value = localStorage.getItem('gh_token') || '';
     ownerInput.value = localStorage.getItem('gh_owner') || '';
@@ -549,18 +688,24 @@
     function setAuthCollapsed(isCollapsed) {
       if (isCollapsed) {
         authContent.style.display = 'none';
-        btnToggleAuth.textContent = 'Развернуть ▼';
+        btnToggleAuth.textContent = '▼';
         localStorage.setItem('auth_collapsed', '1');
       } else {
         authContent.style.display = 'block';
-        btnToggleAuth.textContent = 'Свернуть ▲';
+        btnToggleAuth.textContent = '▲';
         localStorage.setItem('auth_collapsed', '0');
       }
     }
 
-    btnToggleAuth.addEventListener('click', () => {
+    function toggleAuthPanel() {
       const isCurrentlyCollapsed = authContent.style.display === 'none';
       setAuthCollapsed(!isCurrentlyCollapsed);
+    }
+
+    authHeaderClickable.addEventListener('click', toggleAuthPanel);
+    btnToggleAuth.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleAuthPanel();
     });
 
     const savedAuthCollapsed = localStorage.getItem('auth_collapsed');
@@ -570,43 +715,164 @@
       setAuthCollapsed(false);
     }
 
-    // Проверка Telegram-бота через getMe API
-    async function verifyTelegramBot() {
-      const tgToken = tgTokenInput.value.trim();
-      if (!tgToken) {
-        tgBotBadge.style.display = 'none';
-        return;
-      }
-
-      try {
-        const res = await fetch(`https://api.telegram.org/bot${tgToken}/getMe`);
-        const data = await res.json();
-        if (data.ok && data.result) {
-          tgBotBadge.textContent = `@${data.result.username}`;
-          tgBotBadge.style.display = 'inline-block';
-        } else {
-          tgBotBadge.style.display = 'none';
-        }
-      } catch (err) {
-        tgBotBadge.style.display = 'none';
+    // Установка индикатора поля ввода
+    function setFieldStatus(fieldId, state, titleText = '') {
+      const el = document.getElementById(`status_${fieldId}`);
+      if (!el) return;
+      el.className = 'input-status-icon';
+      el.title = titleText;
+      if (state === 'valid') {
+        el.classList.add('valid');
+        el.textContent = '✓';
+      } else if (state === 'invalid') {
+        el.classList.add('invalid');
+        el.textContent = '✕';
+      } else if (state === 'checking') {
+        el.classList.add('checking');
+        el.textContent = '⏳';
+      } else {
+        el.style.display = 'none';
       }
     }
 
+    // Комплексная проверка авторизаций (GitHub + Telegram)
+    async function verifyAllCredentials() {
+      const ghToken = tokenInput.value.trim();
+      const ghOwner = ownerInput.value.trim();
+      const ghRepo = repoInput.value.trim();
+      const tgToken = tgTokenInput.value.trim();
+      const tgChannel = tgChannelInput.value.trim();
+
+      // 1. Проверка GitHub Token
+      if (ghToken) {
+        setFieldStatus('ghToken', 'checking', 'Проверка токена GitHub...');
+        try {
+          const userRes = await fetch('https://api.github.com/user', {
+            headers: { 'Authorization': `Bearer ${ghToken}` }
+          });
+          if (userRes.ok) {
+            setFieldStatus('ghToken', 'valid', 'Токен GitHub действителен!');
+          } else {
+            setFieldStatus('ghToken', 'invalid', 'Неверный токен GitHub (401 Unauthorized)');
+          }
+        } catch {
+          setFieldStatus('ghToken', 'invalid', 'Ошибка сети при проверке GitHub токена');
+        }
+      } else {
+        setFieldStatus('ghToken', 'none');
+      }
+
+      // 2. Проверка GitHub Репозитория и Owner
+      if (ghToken && ghOwner && ghRepo) {
+        setFieldStatus('ghOwner', 'checking', 'Проверка доступа...');
+        setFieldStatus('ghRepo', 'checking', 'Проверка доступа...');
+        try {
+          const repoRes = await fetch(`https://api.github.com/repos/${ghOwner}/${ghRepo}`, {
+            headers: { 'Authorization': `Bearer ${ghToken}` }
+          });
+          if (repoRes.ok) {
+            setFieldStatus('ghOwner', 'valid', `Владелец ${ghOwner} подтвержден`);
+            setFieldStatus('ghRepo', 'valid', `Репозиторий ${ghRepo} доступен с правом записи`);
+          } else {
+            setFieldStatus('ghOwner', 'invalid', 'Репозиторий или логин не найден');
+            setFieldStatus('ghRepo', 'invalid', 'Репозиторий или логин не найден');
+          }
+        } catch {
+          setFieldStatus('ghOwner', 'invalid', 'Ошибка сети');
+          setFieldStatus('ghRepo', 'invalid', 'Ошибка сети');
+        }
+      } else {
+        if (!ghOwner) setFieldStatus('ghOwner', 'none');
+        if (!ghRepo) setFieldStatus('ghRepo', 'none');
+      }
+
+      // 3. Проверка Telegram-бота через getMe
+      let isBotValid = false;
+      verifiedBotUsername = '';
+      if (tgToken) {
+        setFieldStatus('tgToken', 'checking', 'Проверка бота...');
+        try {
+          const meRes = await fetch(`https://api.telegram.org/bot${tgToken}/getMe`);
+          const meData = await meRes.json();
+          if (meData.ok && meData.result) {
+            isBotValid = true;
+            verifiedBotUsername = meData.result.username;
+            setFieldStatus('tgToken', 'valid', `Бот @${verifiedBotUsername} авторизован`);
+          } else {
+            setFieldStatus('tgToken', 'invalid', 'Неверный токен Telegram-бота');
+          }
+        } catch {
+          setFieldStatus('tgToken', 'invalid', 'Ошибка соединения с Telegram API');
+        }
+      } else {
+        setFieldStatus('tgToken', 'none');
+      }
+
+      // 4. Проверка Telegram-канала через getChat
+      let isChannelValid = false;
+      verifiedChannelTitle = '';
+      if (tgToken && isBotValid && tgChannel) {
+        setFieldStatus('tgChannel', 'checking', 'Проверка канала...');
+        try {
+          const chatRes = await fetch(`https://api.telegram.org/bot${tgToken}/getChat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: tgChannel })
+          });
+          const chatData = await chatRes.json();
+          if (chatData.ok && chatData.result) {
+            isChannelValid = true;
+            verifiedChannelTitle = chatData.result.title || tgChannel;
+            setFieldStatus('tgChannel', 'valid', `Канал: "${verifiedChannelTitle}" найден`);
+          } else {
+            setFieldStatus('tgChannel', 'invalid', 'Канал не найден или бот не добавлен админом');
+          }
+        } catch {
+          setFieldStatus('tgChannel', 'invalid', 'Ошибка связи с каналом');
+        }
+      } else {
+        if (!tgChannel) setFieldStatus('tgChannel', 'none');
+      }
+
+      // Обновление строки под чекбоксом Telegram
+      updateTelegramTargetLabel(isBotValid, isChannelValid, tgChannel);
+    }
+
+    function updateTelegramTargetLabel(isBotValid, isChannelValid, channelRaw) {
+      if (isBotValid && isChannelValid) {
+        tgPublishTargetDesc.innerHTML = `
+          <span class="tg-target-badge">@${verifiedBotUsername}</span>
+          <span>➔</span>
+          <span class="tg-target-badge">${channelRaw}</span>
+        `;
+      } else if (isBotValid && !isChannelValid && channelRaw) {
+        tgPublishTargetDesc.innerHTML = `
+          <span class="tg-target-warn">⚠️ Бот @${verifiedBotUsername} не подключен к каналу ${channelRaw}</span>
+        `;
+      } else if (!isBotValid && tgTokenInput.value.trim()) {
+        tgPublishTargetDesc.innerHTML = `<span class="tg-target-warn">⚠️ Неверный токен бота</span>`;
+      } else {
+        tgPublishTargetDesc.innerHTML = `<span style="color:#71717a; font-size:11px;">(настройки Telegram не заданы)</span>`;
+      }
+    }
+
+    // Автопроверка при старте
     if (tokenInput.value && ownerInput.value && repoInput.value) {
       loadAllData();
-      verifyTelegramBot();
+      verifyAllCredentials();
     }
 
-    btnConnect.addEventListener('click', () => {
+    // Кнопка сохранения и проверки настроек
+    btnConnect.addEventListener('click', async () => {
       localStorage.setItem('gh_token', tokenInput.value.trim());
       localStorage.setItem('gh_owner', ownerInput.value.trim());
       localStorage.setItem('gh_repo', repoInput.value.trim());
       localStorage.setItem('tg_token', tgTokenInput.value.trim());
       localStorage.setItem('tg_channel', tgChannelInput.value.trim());
 
+      await verifyAllCredentials();
       loadAllData();
-      verifyTelegramBot();
-      setAuthCollapsed(true); // Автоматически сворачиваем после успешного нажатия
+      setAuthCollapsed(true);
     });
 
     // Функция авто-ресайза и сжатия (до 1400px, 82% качество)
@@ -1084,7 +1350,7 @@
       formHeader.querySelector('span').textContent = '➕ Добавить новый товар';
       submitBtn.textContent = 'Выложить товар';
       cancelEditBtn.style.display = 'none';
-      tgPublishCheck.checked = true; // Для новых товаров галочка снова активна
+      tgPublishCheck.checked = true;
     }
 
     // Сохранение товара (пакетный коммит через Git Data API в 1 действие)
@@ -1243,12 +1509,9 @@
               ? `https://raw.githubusercontent.com/${owner}/${repo}/main/${firstImg}`
               : firstImg;
 
-            const botUsername = tgBotBadge.textContent.replace('@', '');
-            
-            // Имя Mini App из BotFather (если создавал с другим именем — впиши его вместо 'catalog')
+            const botUsername = verifiedBotUsername || 'pogodin_3d_bot';
             const miniAppName = 'catalogp3d'; 
             
-            // Формируем ссылку на запуск приложения внутри Telegram
             const miniAppUrl = `https://t.me/${botUsername}/${miniAppName}?startapp=item_${updatedItem.id}`;
             const botOrderUrl = `https://t.me/${botUsername}?start=item_${updatedItem.id}`;
 
