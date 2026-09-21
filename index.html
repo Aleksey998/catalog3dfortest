@@ -1620,33 +1620,42 @@
       const tgBtn = e.target.closest('a.btn-tg');
       if (!tgBtn) return;
 
-      // Если мы внутри Telegram Mini App
+      // Если открыто внутри Telegram Mini App
       if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
         e.preventDefault();
 
         const url = new URL(tgBtn.href);
         const textParam = url.searchParams.get('text') || '';
         const orderText = decodeURIComponent(textParam);
-
         const tg = window.Telegram.WebApp;
 
-        // Копируем текст в буфер обмена
+        // 1. Пробуем открыть напрямую через Telegram (сработает при открытии из списка чатов/канала)
+        try {
+          if (typeof tg.openTelegramLink === 'function') {
+            tg.openTelegramLink(tgBtn.href);
+          }
+        } catch (err) {
+          console.warn('openTelegramLink error:', err);
+        }
+
+        // 2. Если мы внутри кнопки Menu у поля ввода — ссылка глушится клиентом.
+        // Поэтому для подстраховки копируем текст только здесь:
         if (navigator.clipboard) {
           navigator.clipboard.writeText(orderText).catch(() => {});
         }
 
-        // Показываем красивое всплывающее окно Telegram и закрываем приложение
+        // Показываем уведомление, но НЕ убиваем апп через tg.close(), 
+        // чтобы шторка осталась живой и её можно было просто смахнуть вниз
         if (typeof tg.showAlert === 'function') {
-          tg.showAlert('Текст заказа скопирован! Вставьте его в чат и нажмите отправить.', () => {
-            tg.close();
-          });
+          tg.showAlert('Текст заказа скопирован в буфер! Смахните шторку вниз и вставьте текст в чат.');
         } else {
-          alert('Текст заказа скопирован! Вставьте его в чат и нажмите отправить.');
-          tg.close();
+          alert('Текст заказа скопирован! Смахните шторку вниз и вставьте текст в чат.');
         }
+
         return;
       }
-      // В обычном браузере на сайте работает стандартный переход по ссылке
+
+      // В обычном браузере на сайте — стандартный переход по ссылке
     });
 
     initCatalog();
