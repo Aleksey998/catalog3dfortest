@@ -414,7 +414,7 @@
       display: flex; 
       flex-direction: row; 
       gap: 10px; 
-      flex-shrink: 0;
+      flex-shrink: 0; 
       flex-wrap: wrap;
     }
     .btn {
@@ -1103,7 +1103,7 @@
         modalThumbsHtml = `
           <div class="thumbnails">
             ${validImages.map((img, idx) => `
-              <img src="${img}" class="thumb-img ${idx === 0 ? 'active' : ''}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src=NO_PHOTO_PLACEHOLDER;" onclick="changeModalImage(this, ${item.id}, ${idx})">
+              <img src="${img}" class="thumb-img ${idx === 0 ? 'active' : ''}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src=NO_PHOTO_PLACEHOLDER;" onclick="changeModalImage(this, ${item.id},${idx})">
             `).join('')}
           </div>
         `;
@@ -1125,7 +1125,7 @@
             <span class="price-value">${rawPrice} ₽</span>
           </div>
           <div class="actions">
-            <a href="${tgLink}" target="_blank" class="btn btn-tg">Заказать в Telegram</a>
+            <a href="${tgLink}" class="btn btn-tg" onclick="handleTgOrder(event, '${tgLink}')">Заказать в Telegram</a>
             <a href="${instLink}" target="_blank" class="btn btn-inst">Заказать в Instagram</a>
           </div>
         </div>
@@ -1268,7 +1268,7 @@
           thumbnailsHtml = `
             <div class="thumbnails">
               ${validImages.map((img, idx) => `
-                <img src="${img}" class="thumb-img ${idx === 0 ? 'active' : ''}" loading="lazy" decoding="async" data-main-target="main-img-${item.id}" data-idx="${idx}" onerror="this.onerror=null; this.src=NO_PHOTO_PLACEHOLDER;" onclick="changeImage(this, ${item.id}, ${idx})">
+                <img src="${img}" class="thumb-img ${idx === 0 ? 'active' : ''}" loading="lazy" decoding="async" data-main-target="main-img-${item.id}" data-idx="${idx}" onerror="this.onerror=null; this.src=NO_PHOTO_PLACEHOLDER;" onclick="changeImage(this, ${item.id},${idx})">
               `).join('')}
             </div>
           `;
@@ -1303,7 +1303,7 @@
                 <span class="price-value">${rawPrice} ₽</span>
               </div>
               <div class="actions">
-                <a href="${tgLink}" target="_blank" class="btn btn-tg">Заказать в Telegram</a>
+                <a href="${tgLink}" class="btn btn-tg" onclick="handleTgOrder(event, '${tgLink}')">Заказать в Telegram</a>
                 <a href="${instLink}" target="_blank" class="btn btn-inst">Заказать в Instagram</a>
               </div>
             </div>
@@ -1503,7 +1503,7 @@
     window.addEventListener('mousemove', (e) => {
       if (!isMouseDown) return;
       const dx = e.clientX - mouseStartX;
-      dy = e.clientY - mouseStartY;
+      const dy = e.clientY - mouseStartY;
 
       if (Math.hypot(dx, dy) > 5) {
         mouseHasMoved = true;
@@ -1615,6 +1615,24 @@
         }
       }
     }, { passive: true });
+
+    window.handleTgOrder = function(event, tgLink) {
+      if (event) event.preventDefault();
+
+      if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.openTelegramLink === 'function') {
+        try {
+          window.Telegram.WebApp.openTelegramLink(tgLink);
+          setTimeout(() => {
+            window.Telegram.WebApp.close();
+          }, 150);
+          return;
+        } catch (err) {
+          console.warn('Telegram open link error:', err);
+        }
+      }
+
+      window.open(tgLink, '_blank');
+    };
 
     initCatalog();
   </script>
