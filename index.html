@@ -1620,34 +1620,33 @@
       const tgBtn = e.target.closest('a.btn-tg');
       if (!tgBtn) return;
 
-      // Если мы открыты внутри Telegram WebApp
+      // Если мы внутри Telegram Mini App
       if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
         e.preventDefault();
 
         const url = new URL(tgBtn.href);
         const textParam = url.searchParams.get('text') || '';
+        const orderText = decodeURIComponent(textParam);
 
-        // Пробуем нативный диплинк приложения Telegram
-        const deepLink = `tg://resolve?domain=${TG_USERNAME}&text=${encodeURIComponent(textParam)}`;
+        const tg = window.Telegram.WebApp;
 
         try {
-          // Если есть метод openTelegramLink — используем его с прямым диплинком
-          if (typeof window.Telegram.WebApp.openTelegramLink === 'function') {
-            window.Telegram.WebApp.openTelegramLink(deepLink);
-          } else {
-            window.location.href = deepLink;
-          }
-
-          // Небольшая задержка, чтобы Telegram успел переключить фокус на ввод текста, и закрываем шторку
-          setTimeout(() => {
-            window.Telegram.WebApp.close();
-          }, 300);
+          // 1. Пытаемся отправить данные напрямую в чат через нативный sendData
+          // Это работает идеально именно для кнопки Menu слева от ввода!
+          tg.sendData(orderText);
+          return;
         } catch (err) {
-          console.warn('Ошибка вызова Telegram:', err);
+          console.warn('sendData не сработал, пробуем внешний переход:', err);
+        }
+
+        // 2. Если sendData не доступен (открыто снаружи) — открываем прямую ссылку
+        if (typeof tg.openTelegramLink === 'function') {
+          tg.openTelegramLink(tgBtn.href);
+        } else {
           window.location.href = tgBtn.href;
         }
       }
-      // В обычном браузере на сайте ничего не перехватывается, работает стандартный переход по ссылке
+      // В обычном браузере срабатывает штатный переход по ссылке
     });
 
     initCatalog();
