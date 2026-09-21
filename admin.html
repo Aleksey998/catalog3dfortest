@@ -857,7 +857,11 @@
     }
 
     // 1. АВТОПРОГРУЗКА ПРИ СТАРТЕ ИЛИ F5: сразу открывает разделы и товары
-    if (tokenInput.value.trim() && ownerInput.value.trim() && repoInput.value.trim()) {
+    const savedGhToken = localStorage.getItem('gh_token') || '';
+    const savedGhOwner = localStorage.getItem('gh_owner') || '';
+    const savedGhRepo = localStorage.getItem('gh_repo') || '';
+
+    if (savedGhToken.trim() && savedGhOwner.trim() && savedGhRepo.trim()) {
       catBox.style.display = 'block';
       editorBox.style.display = 'block';
       listBox.style.display = 'block';
@@ -1059,6 +1063,12 @@
       const repo = repoInput.value.trim();
 
       if (!token || !owner || !repo) return;
+
+      // Сразу отображаем блоки интерфейса
+      catBox.style.display = 'block';
+      editorBox.style.display = 'block';
+      listBox.style.display = 'block';
+
       showStatus('loading', '⏳ Загрузка данных...');
 
       try {
@@ -1091,10 +1101,6 @@
 
         renderCategories();
         renderProductsList();
-
-        catBox.style.display = 'block';
-        editorBox.style.display = 'block';
-        listBox.style.display = 'block';
         hideStatus();
       } catch (err) {
         showStatus('error', `❌ Ошибка: ${err.message}`);
@@ -1615,9 +1621,8 @@
       clearTimeout(statusAutoClearTimer);
       statusMsg.className = `status-msg ${type}`;
       statusMsg.textContent = msg;
-      statusMsg.style.display = 'block'; // Принудительно сбрасываем display: none
+      statusMsg.style.display = 'block';
 
-      // Если это сообщение об успехе — плавно скрываем его через 5 секунд
       if (type === 'success') {
         statusAutoClearTimer = setTimeout(() => {
           hideStatus();
