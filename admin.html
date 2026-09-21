@@ -1614,8 +1614,14 @@
             const miniAppName = 'catalogp3d'; 
             
             const miniAppUrl = `https://t.me/${botUsername}/${miniAppName}?startapp=item_${updatedItem.id}`;
-            const botOrderUrl = `https://t.me/${botUsername}?start=item_${updatedItem.id}`;
-
+            
+            // Формируем текст сообщения в точности как в каталоге
+            const rawPrice = String(updatedItem.price).replace(/[^\d\s.,]/g, '').trim();
+            const orderMsg = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${updatedItem.title}" за ${rawPrice} рублей. Подскажите по срокам изготовления.`;
+            
+            // Передаем текст в ссылку через encodeURIComponent
+            const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
+            
             const caption = `🔥 *Новинка в Pogodin_3d!*\n\n` +
                             `📦 *${updatedItem.title}*\n` +
                             `💰 Цена: *${updatedItem.price}*\n\n` +
