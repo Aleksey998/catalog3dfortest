@@ -856,30 +856,64 @@
       }
     }
 
-    // Автопроверка при старте: сначала открываем интерфейс и грузим товары, потом фоном проверяем API
-    if (tokenInput.value.trim() && ownerInput.value.trim() && repoInput.value.trim()) {
-      (async () => {
-        // Сразу открываем рабочие блоки, если ключи сохранены
-        catBox.style.display = 'block';
-        editorBox.style.display = 'block';
-        listBox.style.display = 'block';
-
-        await loadAllData();
-        verifyAllCredentials();
-      })();
-    }
-
-    // Кнопка сохранения и проверки настроек
-    btnConnect.addEventListener('click', async () => {
+    // Автосохранение настроек в localStorage
+    function saveSettingsToStorage() {
       localStorage.setItem('gh_token', tokenInput.value.trim());
       localStorage.setItem('gh_owner', ownerInput.value.trim());
       localStorage.setItem('gh_repo', repoInput.value.trim());
       localStorage.setItem('tg_token', tgTokenInput.value.trim());
       localStorage.setItem('tg_channel', tgChannelInput.value.trim());
+    }
 
-      await verifyAllCredentials();
-      loadAllData();
+    // Таймер дебаунса для автопроверки во время ввода
+    let authDebounceTimer = null;
+    function handleAuthInputChange() {
+      saveSettingsToStorage();
+      clearTimeout(authDebounceTimer);
+      authDebounceTimer = setTimeout(async () => {
+        await verifyAllCredentials();
+        if (tokenInput.value.trim() && ownerInput.value.trim() && repoInput.value.trim()) {
+          catBox.style.display = 'block';
+          editorBox.style.display = 'block';
+          listBox.style.display = 'block';
+          loadAllData();
+        }
+      }, 500);
+    }
+
+    // Вешаем слушатели на каждое поле (печатаешь — сразу сохраняется и проверяется)
+    [tokenInput, ownerInput, repoInput, tgTokenInput, tgChannelInput].forEach(input => {
+      input.addEventListener('input', handleAuthInputChange);
+      input.addEventListener('change', handleAuthInputChange);
     });
+
+    // Кнопка остаётся как ручной форсированный запуск (если захочешь нажать руками)
+    btnConnect.addEventListener('click', async () => {
+      saveSettingsToStorage();
+      await verifyAllCredentials();
+      if (tokenInput.value.trim() && ownerInput.value.trim() && repoInput.value.trim()) {
+        catBox.style.display = 'block';
+        editorBox.style.display = 'block';
+        listBox.style.display = 'block';
+        loadAllData();
+      }
+    });
+
+    // АВТОЗАПУСК ПРИ СТАРТЕ ИЛИ ОБНОВЛЕНИИ СТРАНИЦЫ (F5)
+    (async function initAdminAuth() {
+      saveSettingsToStorage(); // Синхронизируем на всякий случай
+
+      // Проверяем все токены и каналы (загораются галочки / крестики)
+      verifyAllCredentials();
+
+      // Если данные GitHub уже есть в памяти — сразу открываем каталог
+      if (tokenInput.value.trim() && ownerInput.value.trim() && repoInput.value.trim()) {
+        catBox.style.display = 'block';
+        editorBox.style.display = 'block';
+        listBox.style.display = 'block';
+        loadAllData();
+      }
+    })();
 
     // Функция авто-ресайза и сжатия (до 1400px, 82% качество)
     function compressImageFile(file, maxWidth = 1400, quality = 0.82) {
