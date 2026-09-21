@@ -940,9 +940,45 @@
     document.addEventListener('click', () => dropdownMenu.classList.remove('show'));
 
     async function initCatalog() {
+      // 1. Проверяем обычный GET-параметр из адресной строки (?item=...)
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.has('item')) {
         singleItemId = urlParams.get('item');
+      }
+
+      // 2. Бронебойный перехват Telegram Mini App
+      if (!singleItemId) {
+        // Вариант А: из нативного SDK Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+          try {
+            window.Telegram.WebApp.ready();
+            const startParam = window.Telegram.WebApp.initDataUnsafe?.start_param;
+            if (startParam) {
+              singleItemId = startParam.replace(/^item_/, '');
+            }
+          } catch (e) {
+            console.warn('TG SDK error:', e);
+          }
+        }
+
+        // Вариант Б: из хэша адресной строки (tgWebAppStartParam=item_xxx)
+        if (!singleItemId && window.location.hash) {
+          try {
+            const hashStr = window.location.hash.substring(1);
+            const hashParams = new URLSearchParams(hashStr);
+            const rawParam = hashParams.get('tgWebAppStartParam');
+            if (rawParam) {
+              singleItemId = rawParam.replace(/^item_/, '');
+            }
+          } catch (e) {
+            console.warn('TG Hash parse error:', e);
+          }
+        }
+      }
+
+      // Чистим ID от случайных пробелов и символов
+      if (singleItemId) {
+        singleItemId = String(singleItemId).trim();
       }
 
       try {
