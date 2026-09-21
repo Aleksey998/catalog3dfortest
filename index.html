@@ -1630,23 +1630,23 @@
 
         const tg = window.Telegram.WebApp;
 
-        try {
-          // 1. Пытаемся отправить данные напрямую в чат через нативный sendData
-          // Это работает идеально именно для кнопки Menu слева от ввода!
-          tg.sendData(orderText);
-          return;
-        } catch (err) {
-          console.warn('sendData не сработал, пробуем внешний переход:', err);
+        // Копируем текст в буфер обмена
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(orderText).catch(() => {});
         }
 
-        // 2. Если sendData не доступен (открыто снаружи) — открываем прямую ссылку
-        if (typeof tg.openTelegramLink === 'function') {
-          tg.openTelegramLink(tgBtn.href);
+        // Показываем красивое всплывающее окно Telegram и закрываем приложение
+        if (typeof tg.showAlert === 'function') {
+          tg.showAlert('Текст заказа скопирован! Вставьте его в чат и нажмите отправить.', () => {
+            tg.close();
+          });
         } else {
-          window.location.href = tgBtn.href;
+          alert('Текст заказа скопирован! Вставьте его в чат и нажмите отправить.');
+          tg.close();
         }
+        return;
       }
-      // В обычном браузере срабатывает штатный переход по ссылке
+      // В обычном браузере на сайте работает стандартный переход по ссылке
     });
 
     initCatalog();
