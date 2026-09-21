@@ -1620,23 +1620,34 @@
       const tgBtn = e.target.closest('a.btn-tg');
       if (!tgBtn) return;
 
-      const url = new URL(tgBtn.href);
-      const textParam = url.searchParams.get('text');
-
-      // Если мы внутри Telegram Mini App
+      // Если мы открыты внутри Telegram WebApp
       if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
-        // Копируем текст заказа в буфер обмена, чтобы юзер мог сразу вставить его, если клиент Telegram заартачится
-        if (textParam && navigator.clipboard) {
-          navigator.clipboard.writeText(decodeURIComponent(textParam)).catch(() => {});
-        }
+        e.preventDefault();
 
-        // Если есть метод openTelegramLink — открываем через него
-        if (typeof window.Telegram.WebApp.openTelegramLink === 'function') {
-          e.preventDefault();
-          window.Telegram.WebApp.openTelegramLink(tgBtn.href);
+        const url = new URL(tgBtn.href);
+        const textParam = url.searchParams.get('text') || '';
+
+        // Пробуем нативный диплинк приложения Telegram
+        const deepLink = `tg://resolve?domain=${TG_USERNAME}&text=${encodeURIComponent(textParam)}`;
+
+        try {
+          // Если есть метод openTelegramLink — используем его с прямым диплинком
+          if (typeof window.Telegram.WebApp.openTelegramLink === 'function') {
+            window.Telegram.WebApp.openTelegramLink(deepLink);
+          } else {
+            window.location.href = deepLink;
+          }
+
+          // Небольшая задержка, чтобы Telegram успел переключить фокус на ввод текста, и закрываем шторку
+          setTimeout(() => {
+            window.Telegram.WebApp.close();
+          }, 300);
+        } catch (err) {
+          console.warn('Ошибка вызова Telegram:', err);
+          window.location.href = tgBtn.href;
         }
       }
-      // В обычном браузере на сайте событие сработает штатно как стандартная ссылка <a target="_blank">
+      // В обычном браузере на сайте ничего не перехватывается, работает стандартный переход по ссылке
     });
 
     initCatalog();
