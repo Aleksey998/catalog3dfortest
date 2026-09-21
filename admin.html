@@ -838,6 +838,75 @@
       updateTelegramTargetLabel(isBotValid, isChannelValid, tgChannel);
     }
 
+    // Отдельная автоматическая проверка только данных Telegram
+    let tgCheckDebounceTimer = null;
+    async function checkTelegramOnly() {
+      const tgToken = tgTokenInput.value.trim();
+      const tgChannel = tgChannelInput.value.trim();
+
+      // Сохраняем телеграм в localStorage на лету
+      localStorage.setItem('tg_token', tgToken);
+      localStorage.setItem('tg_channel', tgChannel);
+
+      let isBotValid = false;
+      verifiedBotUsername = '';
+
+      if (tgToken) {
+        setFieldStatus('tgToken', 'checking', 'Проверка бота...');
+        try {
+          const meRes = await fetch(`https://api.telegram.org/bot${tgToken}/getMe`);
+          const meData = await meRes.json();
+          if (meData.ok && meData.result) {
+            isBotValid = true;
+            verifiedBotUsername = meData.result.username;
+            setFieldStatus('tgToken', 'valid', `Бот @${verifiedBotUsername} авторизован`);
+          } else {
+            setFieldStatus('tgToken', 'invalid', 'Неверный токен Telegram-бота');
+          }
+        } catch {
+          setFieldStatus('tgToken', 'invalid', 'Ошибка соединения с Telegram API');
+        }
+      } else {
+        setFieldStatus('tgToken', 'none');
+      }
+
+      let isChannelValid = false;
+      verifiedChannelTitle = '';
+      if (tgToken && isBotValid && tgChannel) {
+        setFieldStatus('tgChannel', 'checking', 'Проверка канала...');
+        try {
+          const chatRes = await fetch(`https://api.telegram.org/bot${tgToken}/getChat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: tgChannel })
+          });
+          const chatData = await chatRes.json();
+          if (chatData.ok && chatData.result) {
+            isChannelValid = true;
+            verifiedChannelTitle = chatData.result.title || tgChannel;
+            setFieldStatus('tgChannel', 'valid', `Канал: "${verifiedChannelTitle}" найден`);
+          } else {
+            setFieldStatus('tgChannel', 'invalid', 'Канал не найден или бот не добавлен администратором');
+          }
+        } catch {
+          setFieldStatus('tgChannel', 'invalid', 'Ошибка связи с каналом');
+        }
+      } else {
+        if (!tgChannel) setFieldStatus('tgChannel', 'none');
+      }
+
+      updateTelegramTargetLabel(isBotValid, isChannelValid, tgChannel);
+    }
+
+    // Слушатели на поля Telegram: проверяются автоматически при вводе
+    [tgTokenInput, tgChannelInput].forEach(inp => {
+      inp.addEventListener('input', () => {
+        clearTimeout(tgCheckDebounceTimer);
+        tgCheckDebounceTimer = setTimeout(checkTelegramOnly, 500);
+      });
+      inp.addEventListener('change', checkTelegramOnly);
+    });
+
     function updateTelegramTargetLabel(isBotValid, isChannelValid, channelRaw) {
       if (isBotValid && isChannelValid) {
         tgPublishTargetDesc.innerHTML = `
@@ -856,15 +925,17 @@
       }
     }
 
-    // 1. АВТОПРОГРУЗКА ПРИ СТАРТЕ ИЛИ F5: сразу открывает разделы и товары
+    // 1. АВТОПРОГРУЗКА ПРИ СТАРТЕ ИЛИ F5
     const savedGhToken = localStorage.getItem('gh_token') || '';
     const savedGhOwner = localStorage.getItem('gh_owner') || '';
     const savedGhRepo = localStorage.getItem('gh_repo') || '';
 
+    // Автоматически чекаем только Telegram при открытии
+    if (tgTokenInput.value.trim()) {
+      checkTelegramOnly();
+    }
+
     if (savedGhToken.trim() && savedGhOwner.trim() && savedGhRepo.trim()) {
-      catBox.style.display = 'block';
-      editorBox.style.display = 'block';
-      listBox.style.display = 'block';
       loadAllData();
     }
 
@@ -1075,26 +1146,31 @@
         const catRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/categories.json?t=${Date.now()}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (catRes.status === 401 || catRes.status === 403 || catRes.status === 404) {
+          throw new Error(`Нет доступа к репозиторию или файлам (HTTP ${catRes.status})`);
+        }
         if (catRes.ok) {
           const catData = await catRes.json();
           categoriesSha = catData.sha;
           allCategories = JSON.parse(decodeURIComponent(escape(atob(catData.content.replace(/\s/g, '')))));
-        } else {
-          allCategories = [
-            { "id": "auto", "name": "Автотематика" },
-            { "id": "lamps", "name": "Светильники" },
-            { "id": "engineering", "name": "Инженерка" }
-          ];
         }
 
         const prodRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products.json?t=${Date.now()}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (prodRes.status === 401 || prodRes.status === 403 || prodRes.status === 404) {
+          throw new Error(`Ошибка загрузки products.json (HTTP ${prodRes.status})`);
+        }
         if (prodRes.ok) {
           const prodData = await prodRes.json();
           productsSha = prodData.sha;
           allProducts = JSON.parse(decodeURIComponent(escape(atob(prodData.content.replace(/\s/g, '')))));
         }
+
+        // Показываем панели только ПОСЛЕ успешного получения данных
+        catBox.style.display = 'block';
+        editorBox.style.display = 'block';
+        listBox.style.display = 'block';
 
         hasUnsavedCategoryChanges = false;
         orderSaveWrap.style.display = 'none';
@@ -1103,7 +1179,19 @@
         renderProductsList();
         hideStatus();
       } catch (err) {
-        showStatus('error', `❌ Ошибка: ${err.message}`);
+        // Если данные неверны — сбрасываем старые списки и прячем панели
+        allCategories = [];
+        allProducts = [];
+        categoriesList.innerHTML = '';
+        productsList.innerHTML = '';
+        itemsCount.textContent = '0';
+
+        catBox.style.display = 'none';
+        editorBox.style.display = 'none';
+        listBox.style.display = 'none';
+
+        console.error('Ошибка загрузки с GitHub:', err);
+        alert(`❌ Ошибка доступа к GitHub: ${err.message}\nПроверьте токен, логин и имя репозитория.`);
       }
     }
 
