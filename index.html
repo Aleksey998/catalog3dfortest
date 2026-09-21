@@ -1125,7 +1125,7 @@
             <span class="price-value">${rawPrice} ₽</span>
           </div>
           <div class="actions">
-            <a href="${tgLink}" class="btn btn-tg" onclick="handleTgOrder(event, '${tgLink}')">Заказать в Telegram</a>
+            <a href="${tgLink}" class="btn btn-tg" onclick="handleTgOrder(event, ${item.id})">Заказать в Telegram</a>
             <a href="${instLink}" target="_blank" class="btn btn-inst">Заказать в Instagram</a>
           </div>
         </div>
@@ -1303,7 +1303,7 @@
                 <span class="price-value">${rawPrice} ₽</span>
               </div>
               <div class="actions">
-                <a href="${tgLink}" class="btn btn-tg" onclick="handleTgOrder(event, '${tgLink}')">Заказать в Telegram</a>
+                <a href="${tgLink}" class="btn btn-tg" onclick="handleTgOrder(event, ${item.id})">Заказать в Telegram</a>
                 <a href="${instLink}" target="_blank" class="btn btn-inst">Заказать в Instagram</a>
               </div>
             </div>
@@ -1616,22 +1616,35 @@
       }
     }, { passive: true });
 
-    window.handleTgOrder = function(event, tgLink) {
+    window.handleTgOrder = function(event, productId) {
       if (event) event.preventDefault();
 
-      if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.openTelegramLink === 'function') {
+      const item = products.find(p => p.id === productId);
+      const rawPrice = item ? String(item.price).replace(/[^\d\s.,]/g, '').trim() : '';
+      const title = item ? item.title : '';
+      const orderMsg = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${title}" за ${rawPrice} рублей. Подскажите по срокам изготовления.`;
+      const fallbackUrl = `https://t.me/${TG_USERNAME}?text=${encodeURIComponent(orderMsg)}`;
+
+      // Если запущено внутри Telegram Mini App
+      if (window.Telegram && window.Telegram.WebApp) {
         try {
-          window.Telegram.WebApp.openTelegramLink(tgLink);
-          setTimeout(() => {
-            window.Telegram.WebApp.close();
-          }, 150);
-          return;
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(orderMsg).catch(() => {});
+          }
+
+          const shareLink = `https://t.me/share/url?url=&text=${encodeURIComponent(orderMsg)}`;
+
+          if (typeof window.Telegram.WebApp.openTelegramLink === 'function') {
+            window.Telegram.WebApp.openTelegramLink(shareLink);
+            return;
+          }
         } catch (err) {
-          console.warn('Telegram open link error:', err);
+          console.warn('Telegram share link error:', err);
         }
       }
 
-      window.open(tgLink, '_blank');
+      // Если в обычном браузере
+      window.open(fallbackUrl, '_blank');
     };
 
     initCatalog();
