@@ -1243,8 +1243,14 @@
               ? `https://raw.githubusercontent.com/${owner}/${repo}/main/${firstImg}`
               : firstImg;
 
-            const siteUrl = `https://${owner}.github.io/${repo}/?item=${updatedItem.id}`;
-            const botOrderUrl = `https://t.me/${tgBotBadge.textContent.replace('@', '')}?start=item_${updatedItem.id}`;
+            const botUsername = tgBotBadge.textContent.replace('@', '');
+            
+            // Имя Mini App из BotFather (если создавал с другим именем — впиши его вместо 'catalog')
+            const miniAppName = 'catalogp3d'; 
+            
+            // Формируем ссылку на запуск приложения внутри Telegram
+            const miniAppUrl = `https://t.me/${botUsername}/${miniAppName}?startapp=item_${updatedItem.id}`;
+            const botOrderUrl = `https://t.me/${botUsername}?start=item_${updatedItem.id}`;
 
             const caption = `🔥 *Новинка в Pogodin_3d!*\n\n` +
                             `📦 *${updatedItem.title}*\n` +
@@ -1263,7 +1269,7 @@
                 reply_markup: {
                   inline_keyboard: [
                     [
-                      { text: '🌐 Открыть на сайте', url: siteUrl },
+                      { text: '📱 Открыть в приложении', url: miniAppUrl },
                       { text: '💬 Заказать у мастера', url: botOrderUrl }
                     ]
                   ]
