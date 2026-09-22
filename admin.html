@@ -470,7 +470,7 @@
 
     <div class="panel-box">
       <div class="form-title form-title-clickable" id="authHeaderClickable" title="Нажмите, чтобы свернуть или развернуть">
-        <span>🔑 Доступ к GitHub и Telegram</span>
+        <span>🔑 Окно авторизации</span>
         <button type="button" class="btn-toggle-arrow" id="btnToggleAuth">▲</button>
       </div>
 
@@ -503,20 +503,20 @@
           <div class="col form-group">
             <label>Токен Telegram-бота (из BotFather):</label>
             <div class="input-wrapper">
-              <input type="password" id="tgToken" placeholder="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ">
+              <input type="password" id="tgToken" placeholder="123ххххххххххххххххххххххххх">
               <span class="input-status-icon" id="status_tgToken" title=""></span>
             </div>
           </div>
           <div class="col form-group">
             <label>Публичный канал (юзернейм или ID):</label>
             <div class="input-wrapper">
-              <input type="text" id="tgChannel" placeholder="@pogodin_3d_channel">
+              <input type="text" id="tgChannel" placeholder="@хххххххх">
               <span class="input-status-icon" id="status_tgChannel" title=""></span>
             </div>
           </div>
         </div>
 
-        <button class="btn btn-green" id="btnConnect" style="background:#2563eb; width:100%; margin-top: 6px;">Проверить и сохранить настройки</button>
+        <button class="btn btn-green" id="btnConnect" style="background:#2563eb; width:100%; margin-top: 6px;">Проверка и сохранение</button>
       </div>
     </div>
 
@@ -525,7 +525,7 @@
       <div class="row" style="margin-bottom: 12px;">
         <input type="hidden" id="editCatId">
         <div class="col">
-          <input type="text" id="catNameInput" placeholder="Название нового раздела.">
+          <input type="text" id="catNameInput" placeholder="Введите название нового раздела.">
         </div>
         <button class="btn btn-green" id="btnSaveCat" style="width: auto; white-space: nowrap;">Добавить в список</button>
         <button class="btn btn-cancel" id="btnCancelCat" style="width: auto;">Отмена</button>
@@ -535,7 +535,7 @@
 
       <div class="order-save-wrap" id="orderSaveWrap" style="display:none;">
         <div class="unsaved-badge">⚠️ Есть несохраненные изменения в разделах! Нажмите кнопку ниже для отправки в репозиторий.</div>
-        <button class="btn btn-green" id="btnSaveCategoriesOrder" style="background: #059669;">💾 Сохранить все изменения разделов на GitHub (1 коммит)</button>
+        <button class="btn btn-green" id="btnSaveCategoriesOrder" style="background: #059669;">💾 Сохранить все изменения разделов на GitHub</button>
       </div>
     </div>
 
@@ -547,7 +547,7 @@
 
         <div class="row">
           <div class="col form-group">
-            <label>Категория товара:</label>
+            <label>Раздел товара:</label>
             <select id="prodCategory" required>
             </select>
           </div>
@@ -1631,11 +1631,11 @@
             // Передаем текст в ссылку через encodeURIComponent
             const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
             
-            const caption = `🔥 *Новинка в Pogodin_3d!*\n\n` +
+            const caption = `🔥 *Новинка в каталоге Pogodin_3d!*\n\n` +
                             `📦 *${updatedItem.title}*\n` +
-                            `💰 Цена: *${updatedItem.price}*\n\n` +
+                            `💰 *_Цена:_* *${updatedItem.price}*\n\n` +
                             `${updatedItem.desc.slice(0, 450)}${updatedItem.desc.length > 450 ? '...' : ''}\n\n` +
-                            `👉 Заказывайте прямо сейчас:`;
+                            `👇 **Заказывайте прямо сейчас** 👇`;
 
             // Ссылка на просмотр товара в обычном браузере на сайте
             const browserCatalogUrl = `https://${owner}.github.io/${repo}/index.html?item=${updatedItem.id}`;
@@ -1677,7 +1677,7 @@
           }
         }
 
-        showStatus('success', `✅ Товар и фото успешно сохранены строго одним коммитом${tgNotice}`);
+        showStatus('success', `✅ Товар и фото успешно сохранены${tgNotice}`);
         resetForm();
         renderProductsList();
       } catch (err) {
