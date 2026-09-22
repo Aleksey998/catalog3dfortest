@@ -1631,19 +1631,14 @@
             // Передаем текст в ссылку через encodeURIComponent
             const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
             
-            // 1. Берем описание (именно updatedItem.desc, как у тебя!), обрезаем до 450 символов
-            let rawDesc = (updatedItem.desc || '');
-            let isLong = rawDesc.length > 150;
-            let cutDesc = rawDesc.slice(0, 150) + (isLong ? '...' : '');
-
-            // 2. Экранируем спецсимволы HTML, чтобы не ломали разметку
-            let safeDesc = cutDesc
+            // Функция безопасного экранирования HTML
+            const escapeHtml = (str) => String(str || '')
               .replace(/&/g, '&amp;')
               .replace(/</g, '&lt;')
               .replace(/>/g, '&gt;');
 
-            // 3. Превращаем твои знаки в теги Telegram HTML
-            let formattedDesc = safeDesc
+            // 1. Безопасно парсим всё описание целиком
+            let fullDesc = escapeHtml(updatedItem.desc || '')
               .replace(/\*\*\*_(.*?)_?\*\*\*/g, '<b><i><u>$1</u></i></b>')
               .replace(/\*\*_(.*?)_\*\*/g, '<i><u>$1</u></i>')
               .replace(/\*_(.*?)_\*/g, '<b><u>$1</u></b>')
@@ -1651,10 +1646,37 @@
               .replace(/\*(.*?)\*/g, '<b>$1</b>')
               .replace(/_(.*?)_/g, '<u>$1</u>');
 
+            // 2. Если описание длинное, аккуратно режем его без разрыва тегов:
+            // Если текст до 150 символов — оставляем как есть.
+            // Если длиннее — берем кусок и гарантированно закрываем повисшие теги.
+            let formattedDesc = fullDesc;
+            if (updatedItem.desc && updatedItem.desc.length > 150) {
+              // Берем первые 150 символов чистого описания и прогоняем только их
+              let cleanCut = escapeHtml(updatedItem.desc.slice(0, 150));
+              
+              // Если рез пришелся внутрь звездочек/подчеркиваний — закрываем их
+              const starCount = (cleanCut.match(/\*/g) || []).length;
+              if (starCount % 2 !== 0) cleanCut += '*';
+              const underCount = (cleanCut.match(/_/g) || []).length;
+              if (underCount % 2 !== 0) cleanCut += '_';
+
+              formattedDesc = cleanCut
+                .replace(/\*\*\*_(.*?)_?\*\*\*/g, '<b><i><u>$1</u></i></b>')
+                .replace(/\*\*_(.*?)_\*\*/g, '<i><u>$1</u></i>')
+                .replace(/\*_(.*?)_\*/g, '<b><u>$1</u></b>')
+                .replace(/\*\*(.*?)\*\*/g, '<i>$1</i>')
+                .replace(/\*(.*?)\*/g, '<b>$1</b>')
+                .replace(/_(.*?)_/g, '<u>$1</u>') + '...';
+            }
+
+            // 3. Заголовок и цену тоже безопасно экранируем
+            const safeTitle = escapeHtml(updatedItem.title);
+            const safePrice = escapeHtml(updatedItem.price);
+
             const caption = 
               `🔥 <i>Новинка в каталоге Pogodin_3d!</i>\n\n` +
-              `📦 <b>${updatedItem.title}</b>\n` +
-              `💰 <b><u>Цена:</u></b> <b>${updatedItem.price}</b>\n\n` +
+              `📦 <b>${safeTitle}</b>\n` +
+              `💰 <b><u>Цена:</u></b> <b>${safePrice}</b>\n\n` +
               `${formattedDesc}\n\n` +
               `⬇️ <i>Заказывайте прямо сейчас</i> ⬇️`;
 
