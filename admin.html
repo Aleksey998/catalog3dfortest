@@ -59,7 +59,7 @@
     }
     .btn-toggle-arrow:hover { 
       color: #fff; 
-      border-color: #4ade80;
+      border-color: #4ade80; 
       background: #333;
     }
 
@@ -177,6 +177,7 @@
     
     .status-msg { margin-top: 12px; padding: 10px; border-radius: 6px; font-size: 13px; display: none; text-align: center; }
     .status-msg.success { display: block; background: rgba(74, 222, 128, 0.15); border: 1px solid #4ade80; color: #4ade80; }
+    .status-msg.warning { display: block; background: rgba(234, 179, 8, 0.15); border: 1px solid #eab308; color: #facc15; }
     .status-msg.error { display: block; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; }
     .status-msg.loading { display: block; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; }
     
@@ -844,7 +845,6 @@
       const tgToken = tgTokenInput.value.trim();
       const tgChannel = tgChannelInput.value.trim();
 
-      // Сохраняем телеграм в localStorage на лету
       localStorage.setItem('tg_token', tgToken);
       localStorage.setItem('tg_channel', tgChannel);
 
@@ -898,7 +898,6 @@
       updateTelegramTargetLabel(isBotValid, isChannelValid, tgChannel);
     }
 
-    // Слушатели на поля Telegram: проверяются автоматически при вводе
     [tgTokenInput, tgChannelInput].forEach(inp => {
       inp.addEventListener('input', () => {
         clearTimeout(tgCheckDebounceTimer);
@@ -930,7 +929,6 @@
     const savedGhOwner = localStorage.getItem('gh_owner') || '';
     const savedGhRepo = localStorage.getItem('gh_repo') || '';
 
-    // Автоматически чекаем только Telegram при открытии
     if (tgTokenInput.value.trim()) {
       checkTelegramOnly();
     }
@@ -939,7 +937,7 @@
       loadAllData();
     }
 
-    // 2. РУЧНАЯ ПРОВЕРКА И СОХРАНЕНИЕ: только при клике на синюю кнопку
+    // 2. РУЧНАЯ ПРОВЕРКА И СОХРАНЕНИЕ
     btnConnect.addEventListener('click', async () => {
       localStorage.setItem('gh_token', tokenInput.value.trim());
       localStorage.setItem('gh_owner', ownerInput.value.trim());
@@ -957,7 +955,7 @@
       }
     });
 
-    // Функция авто-ресайза и сжатия (до 1400px, 82% качество)
+    // Функция авто-ресайза и сжатия
     function compressImageFile(file, maxWidth = 1400, quality = 0.82) {
       return new Promise((resolve) => {
         if (!file.type.match(/image.*/) || file.type === 'image/gif' || file.type === 'image/svg+xml') {
@@ -1015,7 +1013,6 @@
       }, 450);
     });
 
-    // Обработка выбора новых файлов
     prodFiles.addEventListener('change', () => {
       const files = Array.from(prodFiles.files);
       files.forEach(file => {
@@ -1045,7 +1042,7 @@
         card.dataset.index = index;
 
         card.innerHTML = `
-          <img src="${imgObj.src}">
+          <img src="${imgObj.src}" onerror="this.src='logo.png'">
           ${index === 0 ? '<span class="img-badge-main">Главная</span>' : ''}
           <button type="button" class="img-remove-btn" onclick="removeImageFromForm(${index})" title="Удалить">&times;</button>
         `;
@@ -1135,7 +1132,6 @@
 
       if (!token || !owner || !repo) return;
 
-      // Сразу отображаем блоки интерфейса
       catBox.style.display = 'block';
       editorBox.style.display = 'block';
       listBox.style.display = 'block';
@@ -1167,7 +1163,6 @@
           allProducts = JSON.parse(decodeURIComponent(escape(atob(prodData.content.replace(/\s/g, '')))));
         }
 
-        // Показываем панели только ПОСЛЕ успешного получения данных
         catBox.style.display = 'block';
         editorBox.style.display = 'block';
         listBox.style.display = 'block';
@@ -1179,7 +1174,6 @@
         renderProductsList();
         hideStatus();
       } catch (err) {
-        // Если данные неверны — сбрасываем старые списки и прячем панели
         allCategories = [];
         allProducts = [];
         categoriesList.innerHTML = '';
@@ -1200,7 +1194,6 @@
       orderSaveWrap.style.display = 'flex';
     }
 
-    // Отрисовка категорий
     function renderCategories() {
       categoriesList.innerHTML = '';
       prodCategory.innerHTML = '';
@@ -1294,7 +1287,7 @@
         await saveCategoriesToGithub('Обновлены разделы каталога');
         hasUnsavedCategoryChanges = false;
         orderSaveWrap.style.display = 'none';
-        showStatus('success', '✅ Все изменения разделов успешно сохранены в репозиторий одним коммитом!');
+        showStatus('success', '✅ Все изменения разделов успешно сохранены в репозиторий!');
       } catch (err) {
         showStatus('error', `❌ Ошибка сохранения разделов: ${err.message}`);
       } finally {
@@ -1306,6 +1299,16 @@
       const token = tokenInput.value.trim();
       const owner = ownerInput.value.trim();
       const repo = repoInput.value.trim();
+
+      // Запрашиваем свежий SHA файла перед отправкой
+      const freshRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/categories.json?ref=main&t=${Date.now()}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (freshRes.ok) {
+        const freshData = await freshRes.json();
+        categoriesSha = freshData.sha;
+      }
+
       const content = btoa(unescape(encodeURIComponent(JSON.stringify(allCategories, null, 2))));
 
       const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/categories.json`, {
@@ -1319,7 +1322,6 @@
       categoriesSha = data.content.sha;
     }
 
-    // Пагинация в админке
     function renderAdminPagination(totalItems) {
       const totalPages = Math.ceil(totalItems / ADMIN_ITEMS_PER_PAGE);
 
@@ -1364,7 +1366,6 @@
       window.scrollTo({ top: listBox.offsetTop - 20, behavior: 'smooth' });
     };
 
-    // Отрисовка товаров с пагинацией
     function renderProductsList() {
       const query = adminSearchInput.value.trim().toLowerCase();
       
@@ -1390,7 +1391,7 @@
       pageItems.forEach(item => {
         const catObj = allCategories.find(c => c.id === item.category);
         const catLabel = catObj ? catObj.name : item.category;
-        const img = item.images && item.images.length > 0 ? item.images[0] : '';
+        const img = item.images && item.images.length > 0 ? item.images[0] : 'logo.png';
 
         const row = document.createElement('div');
         row.className = 'list-row';
@@ -1434,7 +1435,6 @@
       submitBtn.textContent = 'Сохранить изменения';
       cancelEditBtn.style.display = 'inline-block';
       
-      // При редактировании товара отключаем галочку Telegram, чтобы не спамить в канал
       tgPublishCheck.checked = false;
 
       window.scrollTo({ top: editorBox.offsetTop - 20, behavior: 'smooth' });
@@ -1454,7 +1454,7 @@
       tgPublishCheck.checked = true;
     }
 
-    // Сохранение товара (пакетный коммит через Git Data API в 1 действие)
+    // Сохранение товара (пакетный коммит через Git Data API)
     productForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const token = tokenInput.value.trim();
@@ -1469,7 +1469,8 @@
       showStatus('loading', '⏳ Подготовка файлов к отправке...');
 
       try {
-        const branchRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/branches/main`, {
+        // Запрашиваем СВЕЖИЙ хэш ветки main
+        const branchRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/branches/main?t=${Date.now()}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!branchRes.ok) throw new Error('Не удалось получить данные ветки main');
@@ -1477,9 +1478,19 @@
         const baseCommitSha = branchData.commit.sha;
         const baseTreeSha = branchData.commit.commit.tree.sha;
 
+        // Запрашиваем актуальный products.json
+        const freshProdRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products.json?ref=main&t=${Date.now()}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (freshProdRes.ok) {
+          const freshProdData = await freshProdRes.json();
+          productsSha = freshProdData.sha;
+          allProducts = JSON.parse(decodeURIComponent(escape(atob(freshProdData.content.replace(/\s/g, '')))));
+        }
+
         const treeItems = [];
 
-        // Помечаем старые фото на удаление
+        // Удаление старых фото
         if (imagesToDeleteFromGithub.length > 0) {
           for (const imgPath of imagesToDeleteFromGithub) {
             treeItems.push({
@@ -1494,7 +1505,7 @@
         let finalImages = [];
         const timestamp = Date.now();
 
-        // Заливаем новые фото как Blobs (коммиты НЕ создаются)
+        // Заливка фото
         for (let i = 0; i < formImages.length; i++) {
           const item = formImages[i];
           if (item.type === 'existing') {
@@ -1532,7 +1543,7 @@
         }
 
         finalImages = finalImages.slice(0, 6);
-        if (finalImages.length === 0) finalImages = ['https://via.placeholder.com/300'];
+        if (finalImages.length === 0) finalImages = ['logo.png'];
 
         const isEdit = Boolean(editItemId.value);
         const idToUpdate = isEdit ? parseInt(editItemId.value) : Date.now();
@@ -1553,7 +1564,6 @@
           allProducts.unshift(updatedItem);
         }
 
-        // Кладём products.json прямо в дерево
         treeItems.push({
           path: 'products.json',
           mode: '100644',
@@ -1563,7 +1573,6 @@
 
         showStatus('loading', '⏳ Создание единого коммита...');
 
-        // 1. Создаём Tree с изменениями
         const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -1575,7 +1584,6 @@
         if (!treeRes.ok) throw new Error(`Ошибка создания tree: ${treeRes.statusText}`);
         const treeData = await treeRes.json();
 
-        // 2. Создаём Commit
         const commitMessage = isEdit ? `Обновлен товар: ${updatedItem.title}` : `Добавлен товар: ${updatedItem.title}`;
         const commitRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/commits`, {
           method: 'POST',
@@ -1589,7 +1597,6 @@
         if (!commitRes.ok) throw new Error(`Ошибка создания коммита: ${commitRes.statusText}`);
         const commitData = await commitRes.json();
 
-        // 3. Сдвигаем ветку main на новый коммит
         const updateRefRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/refs/heads/main`, {
           method: 'PATCH',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -1600,14 +1607,15 @@
         });
         if (!updateRefRes.ok) throw new Error(`Ошибка обновления ветки: ${updateRefRes.statusText}`);
 
-        // 4. Отправка в Telegram-канал (если включено и это новый товар)
-        let tgNotice = '';
+        // 4. Отправка в Telegram-канал
+        let tgSentSuccess = true;
+        let tgErrorMessage = '';
+
         if (shouldPublishToTg && !isEdit) {
           showStatus('loading', '⏳ Публикация новинки в Telegram-канал...');
           try {
-            // Проверяем: есть ли реальное загруженное фото или там стоит заглушка placeholder
             const firstImg = (finalImages && finalImages.length > 0) ? finalImages[0] : '';
-            const isRealPhoto = firstImg && !firstImg.includes('placeholder.com') && !firstImg.startsWith('data:');
+            const isRealPhoto = firstImg && !firstImg.includes('placeholder.com') && !firstImg.startsWith('data:') && firstImg !== 'logo.png';
 
             let photoUrl = '';
             if (isRealPhoto) {
@@ -1615,61 +1623,77 @@
                 ? `https://raw.githubusercontent.com/${owner}/${repo}/main/${firstImg}`
                 : firstImg;
             } else {
-              // Заглушка: берем твой фирменный логотип из репозитория!
               photoUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/logo.png`;
             }
 
             const botUsername = verifiedBotUsername || 'pogodin_3d_bot';
             const miniAppName = 'catalogp3d'; 
-            
             const miniAppUrl = `https://t.me/${botUsername}/${miniAppName}?startapp=item_${updatedItem.id}`;
             
-            // Формируем текст сообщения в точности как в каталоге
             const rawPrice = String(updatedItem.price).replace(/[^\d\s.,]/g, '').trim();
             const orderMsg = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${updatedItem.title}" за ${rawPrice} рублей. Подскажите по срокам изготовления.`;
-            
-            // Передаем текст в ссылку через encodeURIComponent
             const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
             
-            // Функция безопасного экранирования HTML
+            const browserCatalogUrl = `https://${owner}.github.io/${repo}/index.html?item=${updatedItem.id}`;
+
+            // Экранирование спецсимволов HTML
             const escapeHtml = (str) => String(str || '')
               .replace(/&/g, '&amp;')
               .replace(/</g, '&lt;')
               .replace(/>/g, '&gt;');
 
-            // 1. Безопасно парсим всё описание целиком
-            let fullDesc = escapeHtml(updatedItem.desc || '')
-              .replace(/\*\*\*_(.*?)_?\*\*\*/g, '<b><i><u>$1</u></i></b>')
-              .replace(/\*\*_(.*?)_\*\*/g, '<i><u>$1</u></i>')
-              .replace(/\*_(.*?)_\*/g, '<b><u>$1</u></b>')
-              .replace(/\*\*(.*?)\*\*/g, '<i>$1</i>')
-              .replace(/\*(.*?)\*/g, '<b>$1</b>')
-              .replace(/_(.*?)_/g, '<u>$1</u>');
+            // Всеядный парсер с балансировщиком тегов
+            function parseCustomMarkdown(text) {
+              if (!text) return '';
+              let s = escapeHtml(text);
 
-            // 2. Если описание длинное, аккуратно режем его без разрыва тегов:
-            // Если текст до 150 символов — оставляем как есть.
-            // Если длиннее — берем кусок и гарантированно закрываем повисшие теги.
-            let formattedDesc = fullDesc;
-            if (updatedItem.desc && updatedItem.desc.length > 150) {
-              // Берем первые 150 символов чистого описания и прогоняем только их
-              let cleanCut = escapeHtml(updatedItem.desc.slice(0, 150));
-              
-              // Если рез пришелся внутрь звездочек/подчеркиваний — закрываем их
-              const starCount = (cleanCut.match(/\*/g) || []).length;
-              if (starCount % 2 !== 0) cleanCut += '*';
-              const underCount = (cleanCut.match(/_/g) || []).length;
-              if (underCount % 2 !== 0) cleanCut += '_';
+              // 1. Строго от сложных комбинаций к простым (порядок знаков равнозначен!)
+              s = s.replace(/\*\*\*_(.*?)_?\*\*\*/g, '<b><i><u>$1</u></i></b>');
+              s = s.replace(/(\*\*_|_\*\*)(.*?)(_\*\*|\*\*_)/g, '<i><u>$2</u></i>');
+              s = s.replace(/(\*_|_\*)(.*?)(_\*|\*_)/g, '<b><u>$2</u></b>');
+              s = s.replace(/\*\*(.*?)\*\*/g, '<i>$1</i>');
+              s = s.replace(/\*(.*?)\*/g, '<b>$1</b>');
+              s = s.replace(/_(.*?)_/g, '<u>$1</u>');
 
-              formattedDesc = cleanCut
-                .replace(/\*\*\*_(.*?)_?\*\*\*/g, '<b><i><u>$1</u></i></b>')
-                .replace(/\*\*_(.*?)_\*\*/g, '<i><u>$1</u></i>')
-                .replace(/\*_(.*?)_\*/g, '<b><u>$1</u></b>')
-                .replace(/\*\*(.*?)\*\*/g, '<i>$1</i>')
-                .replace(/\*(.*?)\*/g, '<b>$1</b>')
-                .replace(/_(.*?)_/g, '<u>$1</u>') + '...';
+              // 2. Автозакрытие повисших тегов
+              const openStack = [];
+              const tagRegex = /<\/?([biu])>/g;
+              let match;
+              while ((match = tagRegex.exec(s)) !== null) {
+                const fullTag = match[0];
+                const tagName = match[1];
+                if (!fullTag.startsWith('</')) {
+                  openStack.push(tagName);
+                } else {
+                  if (openStack.length > 0 && openStack[openStack.length - 1] === tagName) {
+                    openStack.pop();
+                  }
+                }
+              }
+
+              while (openStack.length > 0) {
+                s += `</${openStack.pop()}>`;
+              }
+
+              return s;
             }
 
-            // 3. Заголовок и цену тоже безопасно экранируем
+            // Обрезка текста до 150 символов
+            let rawDesc = (updatedItem.desc || '');
+            let isLong = rawDesc.length > 150;
+            let targetText = rawDesc;
+
+            if (isLong) {
+              let cut = rawDesc.slice(0, 150);
+              if ((cut.match(/\*\*\*/g) || []).length % 2 !== 0) cut += '***';
+              else if ((cut.match(/\*\*/g) || []).length % 2 !== 0) cut += '**';
+              else if ((cut.match(/\*/g) || []).length % 2 !== 0) cut += '*';
+              if ((cut.match(/_/g) || []).length % 2 !== 0) cut += '_';
+              targetText = cut + '...';
+            }
+
+            let formattedDesc = parseCustomMarkdown(targetText);
+
             const safeTitle = escapeHtml(updatedItem.title);
             const safePrice = escapeHtml(updatedItem.price);
 
@@ -1679,9 +1703,6 @@
               `💰 <b><u>Цена:</u></b> <b>${safePrice}</b>\n\n` +
               `${formattedDesc}\n\n` +
               `⬇️ <i>Заказывайте прямо сейчас</i> ⬇️`;
-
-            // Ссылка на просмотр товара в обычном браузере на сайте
-            const browserCatalogUrl = `https://${owner}.github.io/${repo}/index.html?item=${updatedItem.id}`;
 
             const tgRes = await fetch(`https://api.telegram.org/bot${tgToken}/sendPhoto`, {
               method: 'POST',
@@ -1693,34 +1714,38 @@
                 parse_mode: 'HTML',
                 reply_markup: {
                   inline_keyboard: [
-                    [
-                      { text: '💬 Написать мастеру', url: botOrderUrl }
-                    ],
-                    [
-                      { text: '📱 Открыть в приложении', url: miniAppUrl }
-                    ],
-                    [
-                      { text: '🌐 Открыть в каталоге', url: browserCatalogUrl }
-                    ]
+                    [ { text: '💬 Написать мастеру', url: botOrderUrl } ],
+                    [ { text: '📱 Открыть в приложении', url: miniAppUrl } ],
+                    [ { text: '🌐 Открыть в каталоге', url: browserCatalogUrl } ]
                   ]
                 }
               })
             });
 
             const tgData = await tgRes.json();
-            if (tgData.ok) {
-              tgNotice = ' и опубликован в Telegram-канале!';
-            } else {
+            if (!tgData.ok) {
+              tgSentSuccess = false;
+              tgErrorMessage = tgData.description || 'Не удалось отправить фото';
               console.warn('Ошибка Telegram:', tgData);
-              tgNotice = ' (но в Telegram не ушло: проверь права бота в канале)';
             }
           } catch (tgErr) {
-            console.warn('Ошибка отправки в Telegram:', tgErr);
-            tgNotice = ' (ошибка отправки в Telegram)';
+            tgSentSuccess = false;
+            tgErrorMessage = tgErr.message;
+            console.warn('Ошибка сети Telegram:', tgErr);
           }
         }
 
-        showStatus('success', `✅ Товар и фото успешно сохранены${tgNotice}`);
+        // ========================================================
+        // ИТОГОВЫЙ СТАТУС ДЛЯ ПОЛЬЗОВАТЕЛЯ
+        // ========================================================
+        if (shouldPublishToTg && !isEdit && !tgSentSuccess) {
+          // ЖЕЛТЫЙ СТАТУС: товар в каталоге сохранился, но Telegram отклонил пост
+          showStatus('warning', `⚠️ Товар сохранён в каталоге, но в Telegram не ушёл: ${tgErrorMessage}`);
+        } else {
+          // ЗЕЛЕНЫЙ СТАТУС: всё выполнено безупречно
+          showStatus('success', isEdit ? '✅ Изменения товара сохранены на GitHub!' : '✅ Товар успешно сохранён и опубликован в Telegram!');
+        }
+
         resetForm();
         renderProductsList();
       } catch (err) {
@@ -1756,6 +1781,16 @@
       const token = tokenInput.value.trim();
       const owner = ownerInput.value.trim();
       const repo = repoInput.value.trim();
+
+      // Запрашиваем свежий SHA файла перед отправкой
+      const freshRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products.json?ref=main&t=${Date.now()}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (freshRes.ok) {
+        const freshData = await freshRes.json();
+        productsSha = freshData.sha;
+      }
+
       const content = btoa(unescape(encodeURIComponent(JSON.stringify(allProducts, null, 2))));
 
       const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products.json`, {
@@ -1777,10 +1812,11 @@
       statusMsg.textContent = msg;
       statusMsg.style.display = 'block';
 
-      if (type === 'success') {
+      // Автоскрытие для success (5 сек) и warning (8 сек)
+      if (type === 'success' || type === 'warning') {
         window.statusAutoClearTimer = setTimeout(() => {
           hideStatus();
-        }, 5000);
+        }, type === 'warning' ? 8000 : 5000);
       }
     }
 
