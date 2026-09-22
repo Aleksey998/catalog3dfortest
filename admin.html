@@ -1605,10 +1605,19 @@
         if (shouldPublishToTg && !isEdit) {
           showStatus('loading', '⏳ Публикация новинки в Telegram-канал...');
           try {
-            const firstImg = finalImages[0];
-            const photoUrl = firstImg.startsWith('images/')
-              ? `https://raw.githubusercontent.com/${owner}/${repo}/main/${firstImg}`
-              : firstImg;
+            // Проверяем: есть ли реальное загруженное фото или там стоит заглушка placeholder
+            const firstImg = (finalImages && finalImages.length > 0) ? finalImages[0] : '';
+            const isRealPhoto = firstImg && !firstImg.includes('placeholder.com') && !firstImg.startsWith('data:');
+
+            let photoUrl = '';
+            if (isRealPhoto) {
+              photoUrl = firstImg.startsWith('images/')
+                ? `https://raw.githubusercontent.com/${owner}/${repo}/main/${firstImg}`
+                : firstImg;
+            } else {
+              // Заглушка: берем твой фирменный логотип из репозитория!
+              photoUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/logo.png`;
+            }
 
             const botUsername = verifiedBotUsername || 'pogodin_3d_bot';
             const miniAppName = 'catalogp3d'; 
