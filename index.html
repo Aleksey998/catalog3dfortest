@@ -1629,11 +1629,16 @@
         const orderText = decodeURIComponent(textParam);
         const tg = window.Telegram.WebApp;
 
-        const chatType = tg.initDataUnsafe?.chat_type;
+        // Определяем: мы СНАРУЖИ (в списке чатов/канале) или ВНУТРИ ДИАЛОГА (кнопка Menu слева от ввода)
+        // Если открыто через кнопку меню внутри чата - start_param обычно пустой, а chat/receiver привязан к боту
+        const isInsideBotChat = Boolean(tg.initDataUnsafe?.receiver || tg.initDataUnsafe?.chat?.type === 'sender' || !tg.initDataUnsafe?.start_param && tg.initDataUnsafe?.user);
 
-        // СЦЕНАРИЙ 1: Открыто НЕ из меню чата (из списка чатов, канала, кнопки в сообщении)
-        // Здесь переход сработает штатно с автозаполнением, буфер НЕ трогаем!
-        if (chatType !== 'sender') {
+        // ========================================================
+        // 1. ЕСЛИ ОТКРЫТО ИЗ СПИСКА ЧАТОВ (ВНЕ ДИАЛОГА)
+        // ========================================================
+        // Здесь мы ДОЛЖНЫ открыть диалог с ботом и подставить текст.
+        // Никакого буфера обмена!
+        if (!isInsideBotChat) {
           if (typeof tg.openTelegramLink === 'function') {
             tg.openTelegramLink(tgBtn.href);
           } else {
@@ -1642,55 +1647,49 @@
           return;
         }
 
-        // СЦЕНАРИЙ 2: Открыто С КНОПКИ MENU слева от ввода
-        // Telegram блокирует переход "сам в себя". Копируем в буфер:
+        // ========================================================
+        // 2. ЕСЛИ ОТКРЫТО С КНОПКИ СЛЕВА ОТ ВВОДА (ВНУТРИ ДИАЛОГА)
+        // ========================================================
+        // Мы УЖЕ в диалоге с этим ботом. Telegram не даст сделать переход в самого себя.
+        // Поэтому: копируем в буфер и НЕ ЗАКРЫВАЕМ приложение, чтобы шторка не схлопнулась!
         if (navigator.clipboard) {
           navigator.clipboard.writeText(orderText).catch(() => {});
         }
 
-        // Пытаемся аккуратно свернуть в нижнюю плашку (без закрытия)
-        try {
-          if (typeof tg.minimize === 'function') {
-            tg.minimize();
-          }
-        } catch (err) {
-          console.warn('Minimize error:', err);
-        }
-
-        // Показываем аккуратную плашку прямо в интерфейсе каталога
+        // Показываем плашку прямо в каталоге
         let toast = document.getElementById('orderToast');
         if (!toast) {
           toast = document.createElement('div');
           toast.id = 'orderToast';
           toast.style.position = 'fixed';
-          toast.style.bottom = '20px';
+          toast.style.bottom = '30px';
           toast.style.left = '50%';
           toast.style.transform = 'translateX(-50%)';
-          toast.style.background = 'rgba(22, 163, 74, 0.95)';
+          toast.style.background = '#16a34a';
           toast.style.color = '#fff';
           toast.style.padding = '12px 20px';
           toast.style.borderRadius = '10px';
           toast.style.fontSize = '14px';
-          toast.style.fontWeight = '600';
-          toast.style.zIndex = '9999';
-          toast.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
+          toast.style.fontWeight = '700';
+          toast.style.zIndex = '99999';
+          toast.style.boxShadow = '0 10px 30px rgba(0,0,0,0.6)';
           toast.style.textAlign = 'center';
-          toast.style.width = '90%';
+          toast.style.width = '88%';
           toast.style.maxWidth = '360px';
           document.body.appendChild(toast);
         }
 
-        toast.textContent = 'Текст скопирован! Смахните каталог вниз и вставьте в чат.';
+        toast.textContent = 'Текст заказа скопирован! Смахните шторку вниз и вставьте в чат.';
         toast.style.display = 'block';
 
         setTimeout(() => {
           if (toast) toast.style.display = 'none';
-        }, 4000);
+        }, 3500);
 
         return;
       }
 
-      // В обычном браузере на сайте — стандартный переход по ссылке
+      // В обычном браузере на сайте — стандартный переход
     });
 
     initCatalog();
