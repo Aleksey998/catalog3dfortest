@@ -1637,6 +1637,9 @@
                             `${updatedItem.desc.slice(0, 450)}${updatedItem.desc.length > 450 ? '...' : ''}\n\n` +
                             `👉 Заказывайте прямо сейчас:`;
 
+            // Ссылка на просмотр товара в обычном браузере на сайте
+            const browserCatalogUrl = `https://${owner}.github.io/${repo}/index.html?item=${updatedItem.id}`;
+
             const tgRes = await fetch(`https://api.telegram.org/bot${tgToken}/sendPhoto`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -1648,8 +1651,13 @@
                 reply_markup: {
                   inline_keyboard: [
                     [
-                      { text: '📱 Открыть в приложении', url: miniAppUrl },
-                      { text: '💬 Заказать у мастера', url: botOrderUrl }
+                      { text: '💬 Написать мастеру', url: botOrderUrl }
+                    ],
+                    [
+                      { text: '📱 Открыть в приложении', url: miniAppUrl }
+                    ],
+                    [
+                      { text: '🌐 Открыть в каталоге', url: browserCatalogUrl }
                     ]
                   ]
                 }
