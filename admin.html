@@ -1396,7 +1396,7 @@
         row.className = 'list-row';
         row.innerHTML = `
           <div class="item-main">
-            <img src="${img}" class="item-thumb" onerror="this.src='https://via.placeholder.com/50'">
+            <img src="${img}" class="item-thumb" onerror="this.src='logo.png'">
             <div class="item-info">
               <div class="item-name">${item.title}</div>
               <div class="item-meta">${item.price} • ${catLabel}</div>
@@ -1631,11 +1631,11 @@
             // Передаем текст в ссылку через encodeURIComponent
             const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
             
-            const caption = `🔥 <b>Новинка в каталоге Pogodin_3d!</b>\n\n` +
-                            `📦 <b>${updatedItem.title}</b>\n` +
-                            `💰 <b><u>Цена:</u></b> <b>${updatedItem.price}</b>\n\n`
+            const caption = `🔥 *Новинка в каталоге Pogodin_3d!*\n\n` +
+                            `📦 *${updatedItem.title}*\n` +
+                            `💰 *_Цена:_* *${updatedItem.price}*\n\n` +
                             `${updatedItem.desc.slice(0, 450)}${updatedItem.desc.length > 450 ? '...' : ''}\n\n` +
-                            `👇 <i>Заказывайте прямо сейчас</i> 👇`;
+                            `👇 **Заказывайте прямо сейчас** 👇`;
 
             // Ссылка на просмотр товара в обычном браузере на сайте
             const browserCatalogUrl = `https://${owner}.github.io/${repo}/index.html?item=${updatedItem.id}`;
@@ -1647,7 +1647,7 @@
                 chat_id: tgChannel,
                 photo: photoUrl,
                 caption: caption,
-                parse_mode: 'HTML',
+                parse_mode: 'Markdown',
                 reply_markup: {
                   inline_keyboard: [
                     [
