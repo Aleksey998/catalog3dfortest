@@ -1642,11 +1642,12 @@
               // 4. Одинарные подчеркивания: _текст_ -> подчеркнутый <u>
               .replace(/_(.*?)_/g, '<u>$1</u>');
 
-            const caption = `🔥 <i>Новинка в каталоге Pogodin_3d!<i>\n\n` +
-                            `📦 <b>${updatedItem.title}</b>\n` +
-                            `💰 <b><u>Цена:</u></b> *${updatedItem.price}*\n\n` +
-                            `${updatedItem.desc.slice(0, 450)}${updatedItem.desc.length > 450 ? '...' : ''}\n\n` +
-                            `👇 <i>Заказывайте прямо сейчас</i> 👇`;
+            const caption = 
+              `🔥 <i>Новинка в каталоге Pogodin_3d!<i>\n\n` +
+              `📦 <b>${updatedItem.title}</b>\n` +
+              `💰 <b><u>Цена:</u></b> *${updatedItem.price}*\n\n` +
+              `${updatedItem.desc.slice(0, 450)}${updatedItem.desc.length > 450 ? '...' : ''}\n\n` +
+              `⬇️ <i>Заказывайте прямо сейчас</i> ⬇️`;
 
             // Ссылка на просмотр товара в обычном браузере на сайте
             const browserCatalogUrl = `https://${owner}.github.io/${repo}/index.html?item=${updatedItem.id}`;
