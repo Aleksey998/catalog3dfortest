@@ -1631,11 +1631,22 @@
             // Передаем текст в ссылку через encodeURIComponent
             const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
             
-            const caption = `🔥 *Новинка в каталоге Pogodin_3d!*\n\n` +
-                            `📦 *${updatedItem.title}*\n` +
-                            `💰 *_Цена:_* *${updatedItem.price}*\n\n` +
-                            `${updatedItem.desc.slice(0, 450)}${updatedItem.desc.length > 450 ? '...' : ''}\n\n` +
-                            `👇 **Заказывайте прямо сейчас** 👇`;
+            // Парсер разметки из описания в понятный для Telegram HTML
+            let formattedDesc = (updatedItem.description || '')
+              // 1. Комбинированный: ***_текст_*** или ***_текст***_ -> жирный + курсив + подчеркнутый
+              .replace(/\*\*\*_(.*?)_?\*\*\*/g, '<b><i><u>$1</u></i></b>')
+              // 2. Двойные звёздочки: **текст** -> курсив <i>
+              .replace(/\*\*(.*?)\*\*/g, '<i>$1</i>')
+              // 3. Одинарные звёздочки: *текст* -> жирный <b>
+              .replace(/\*(.*?)\*/g, '<b>$1</b>')
+              // 4. Одинарные подчеркивания: _текст_ -> подчеркнутый <u>
+              .replace(/_(.*?)_/g, '<u>$1</u>');
+
+            const caption = 
+              `🔥 <b>${updatedItem.title}</b>\n\n` +
+              `💰 <b><u>Цена:</u></b> <b>${updatedItem.price}</b>\n\n` +
+              `${formattedDesc}\n\n` +
+              `⬇️ <b>Для заказа выберите удобный вариант ниже</b> ⬇️`;
 
             // Ссылка на просмотр товара в обычном браузере на сайте
             const browserCatalogUrl = `https://${owner}.github.io/${repo}/index.html?item=${updatedItem.id}`;
@@ -1647,7 +1658,7 @@
                 chat_id: tgChannel,
                 photo: photoUrl,
                 caption: caption,
-                parse_mode: 'Markdown',
+                parse_mode: 'HTML',
                 reply_markup: {
                   inline_keyboard: [
                     [
