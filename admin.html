@@ -1631,22 +1631,31 @@
             // Передаем текст в ссылку через encodeURIComponent
             const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
             
-            // Парсер разметки из описания в понятный для Telegram HTML
-            let formattedDesc = (updatedItem.description || '')
-              // 1. Комбинированный: ***_текст_*** или ***_текст***_ -> жирный + курсив + подчеркнутый
+            // 1. Берем описание (именно updatedItem.desc, как у тебя!), обрезаем до 450 символов
+            let rawDesc = (updatedItem.desc || '');
+            let isLong = rawDesc.length > 150;
+            let cutDesc = rawDesc.slice(0, 150) + (isLong ? '...' : '');
+
+            // 2. Экранируем спецсимволы HTML, чтобы не ломали разметку
+            let safeDesc = cutDesc
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;');
+
+            // 3. Превращаем твои знаки в теги Telegram HTML
+            let formattedDesc = safeDesc
               .replace(/\*\*\*_(.*?)_?\*\*\*/g, '<b><i><u>$1</u></i></b>')
-              // 2. Двойные звёздочки: **текст** -> курсив <i>
+              .replace(/\*\*_(.*?)_\*\*/g, '<i><u>$1</u></i>')
+              .replace(/\*_(.*?)_\*/g, '<b><u>$1</u></b>')
               .replace(/\*\*(.*?)\*\*/g, '<i>$1</i>')
-              // 3. Одинарные звёздочки: *текст* -> жирный <b>
               .replace(/\*(.*?)\*/g, '<b>$1</b>')
-              // 4. Одинарные подчеркивания: _текст_ -> подчеркнутый <u>
               .replace(/_(.*?)_/g, '<u>$1</u>');
 
             const caption = 
               `🔥 <i>Новинка в каталоге Pogodin_3d!</i>\n\n` +
               `📦 <b>${updatedItem.title}</b>\n` +
-              `💰 <b><u>Цена:</u></b> *${updatedItem.price}*\n\n` +
-              `${updatedItem.desc.slice(0, 450)}${updatedItem.desc.length > 450 ? '...' : ''}\n\n` +
+              `💰 <b><u>Цена:</u></b> <b>${updatedItem.price}</b>\n\n` +
+              `${formattedDesc}\n\n` +
               `⬇️ <i>Заказывайте прямо сейчас</i> ⬇️`;
 
             // Ссылка на просмотр товара в обычном браузере на сайте
