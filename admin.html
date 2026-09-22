@@ -1042,7 +1042,7 @@
         card.dataset.index = index;
 
         card.innerHTML = `
-          <img src="${imgObj.src}" onerror="this.src='logo.png'">
+          <img src="${imgObj.src}" onerror="this.src='nofoto.jpg'">
           ${index === 0 ? '<span class="img-badge-main">Главная</span>' : ''}
           <button type="button" class="img-remove-btn" onclick="removeImageFromForm(${index})" title="Удалить">&times;</button>
         `;
@@ -1391,13 +1391,13 @@
       pageItems.forEach(item => {
         const catObj = allCategories.find(c => c.id === item.category);
         const catLabel = catObj ? catObj.name : item.category;
-        const img = item.images && item.images.length > 0 ? item.images[0] : 'logo.png';
+        const img = item.images && item.images.length > 0 ? item.images[0] : 'nofoto.jpg';
 
         const row = document.createElement('div');
         row.className = 'list-row';
         row.innerHTML = `
           <div class="item-main">
-            <img src="${img}" class="item-thumb" onerror="this.src='logo.png'">
+            <img src="${img}" class="item-thumb" onerror="this.src='nofoto.jpg'">
             <div class="item-info">
               <div class="item-name">${item.title}</div>
               <div class="item-meta">${item.price} • ${catLabel}</div>
@@ -1543,7 +1543,7 @@
         }
 
         finalImages = finalImages.slice(0, 6);
-        if (finalImages.length === 0) finalImages = ['logo.png'];
+        if (finalImages.length === 0) finalImages = ['nofoto.jpg'];
 
         const isEdit = Boolean(editItemId.value);
         const idToUpdate = isEdit ? parseInt(editItemId.value) : Date.now();
@@ -1615,7 +1615,7 @@
           showStatus('loading', '⏳ Публикация новинки в Telegram-канал...');
           try {
             const firstImg = (finalImages && finalImages.length > 0) ? finalImages[0] : '';
-            const isRealPhoto = firstImg && !firstImg.includes('placeholder.com') && !firstImg.startsWith('data:') && firstImg !== 'logo.png';
+            const isRealPhoto = firstImg && !firstImg.includes('placeholder.com') && !firstImg.startsWith('data:') && firstImg !== 'nofoto.jpg';
 
             let photoUrl = '';
             if (isRealPhoto) {
@@ -1623,7 +1623,7 @@
                 ? `https://raw.githubusercontent.com/${owner}/${repo}/main/${firstImg}`
                 : firstImg;
             } else {
-              photoUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/logo.png`;
+              photoUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/nofoto.jpg`;
             }
 
             const botUsername = verifiedBotUsername || 'pogodin_3d_bot';
