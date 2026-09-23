@@ -915,6 +915,15 @@
         .replace(/_(.*?)_/g, '<u>$1</u>');
     }
 
+    function formatPrice(price) {
+      if (!price) return 'По запросу';
+      const p = String(price).trim();
+      if (p.includes('₽') || p.toLowerCase().includes('руб')) {
+        return p;
+      }
+      return `${p} ₽`;
+    }
+
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     themeToggleBtn.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
@@ -1031,19 +1040,18 @@
       }
     }
 
-    // Дебаунс поиска с паузой в 1 секунду (1000 мс)
+    // Дебаунс поиска с паузой
     let searchDebounceTimer = null;
     searchInput.addEventListener('input', () => {
       clearTimeout(searchDebounceTimer);
       
-      // Показываем, что поиск ждёт паузы
-      searchInput.style.borderColor = '#f59e0b'; // желтая рамка пока печатаешь
+      searchInput.style.borderColor = '#f59e0b';
 
       searchDebounceTimer = setTimeout(() => {
         currentPage = 1;
         renderProducts();
-        searchInput.style.borderColor = ''; // возвращаем цвет рамки
-      }, 500); // Ровно 1 секунда паузы после последнего нажатия клавиши!
+        searchInput.style.borderColor = '';
+      }, 500);
     });
 
     window.resetSingleView = function() {
@@ -1085,8 +1093,9 @@
       const item = products.find(p => p.id === productId);
       if (!item) return;
 
-      const rawPrice = String(item.price).replace(/[^\d\s.,]/g, '').trim();
-      const msgText = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${item.title}" за ${rawPrice} рублей. Подскажите по срокам изготовления.`;
+      const displayPrice = formatPrice(item.price);
+      const cleanPrice = String(item.price || '').trim();
+      const msgText = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${item.title}" (${cleanPrice}). Подскажите по срокам изготовления.`;
       const tgLink = `https://t.me/${TG_USERNAME}?text=${encodeURIComponent(msgText)}`;
       const instLink = `https://ig.me/m/${INST_USERNAME}`;
 
@@ -1122,7 +1131,7 @@
         <div class="detail-modal-footer">
           <div class="card-price">
             <span class="price-label">Цена:</span>
-            <span class="price-value">${rawPrice} ₽</span>
+            <span class="price-value">${displayPrice}</span>
           </div>
           <div class="actions">
             <a href="${tgLink}" target="_blank" class="btn btn-tg">Заказать в Telegram</a>
@@ -1253,8 +1262,9 @@
       const fragment = document.createDocumentFragment();
 
       pageItems.forEach((item, itemIdx) => {
-        const rawPrice = String(item.price).replace(/[^\d\s.,]/g, '').trim();
-        const msgText = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${item.title}" за ${rawPrice} рублей. Подскажите по срокам изготовления.`;
+        const displayPrice = formatPrice(item.price);
+        const cleanPrice = String(item.price || '').trim();
+        const msgText = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${item.title}" (${cleanPrice}). Подскажите по срокам изготовления.`;
         const tgLink = `https://t.me/${TG_USERNAME}?text=${encodeURIComponent(msgText)}`;
         const instLink = `https://ig.me/m/${INST_USERNAME}`;
 
@@ -1300,7 +1310,7 @@
             <div class="card-footer">
               <div class="card-price">
                 <span class="price-label">Цена:</span>
-                <span class="price-value">${rawPrice} ₽</span>
+                <span class="price-value">${displayPrice}</span>
               </div>
               <div class="actions">
                 <a href="${tgLink}" target="_blank" class="btn btn-tg">Заказать в Telegram</a>
@@ -1637,12 +1647,10 @@
         // СЦЕНАРИЙ А: КНОПКА МЕНЮ СЛЕВА ОТ ВВОДА (mode=menu)
         // ========================================================
         if (isMenuButton) {
-          // 1. Копируем в буфер (потому что переход "в самого себя" Telegram блокирует)
           if (navigator.clipboard) {
             navigator.clipboard.writeText(orderText).catch(() => {});
           }
 
-          // 2. Показываем плашку прямо в каталоге и НЕ убиваем приложение
           let toast = document.getElementById('orderToast');
           if (!toast) {
             toast = document.createElement('div');
@@ -1678,8 +1686,6 @@
         // ========================================================
         // СЦЕНАРИЙ Б: ИЗ СПИСКА ЧАТОВ / КАНАЛА (Main App)
         // ========================================================
-        // Здесь буфер НЕ трогаем, зеленую плашку НЕ показываем.
-        // Выполняем полноценный переход в диалог с ботом с автозаполнением:
         if (typeof tg.openTelegramLink === 'function') {
           tg.openTelegramLink(tgBtn.href);
         } else {
@@ -1687,8 +1693,6 @@
         }
         return;
       }
-
-      // В обычном браузере на сайте — штатный переход
     });
 
     initCatalog();
