@@ -3,7 +3,7 @@
   .tgpost-wrap {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 6px;
   }
   .tgpost-status-badge {
     font-size: 12px;
@@ -38,14 +38,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     gap: 10px;
   }
   .tgpost-btn-add {
     background: #27272a;
     color: #f3f4f6;
     border: 1px solid #3f3f46;
-    padding: 7px 14px;
+    padding: 6px 12px;
     border-radius: 6px;
     font-size: 13px;
     font-weight: 600;
@@ -61,7 +61,7 @@
   .tgpost-buttons-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     margin-top: 4px;
   }
   .tgpost-btn-row {
@@ -69,7 +69,7 @@
     gap: 8px;
     align-items: center;
     background: #141414;
-    padding: 10px;
+    padding: 8px 10px;
     border-radius: 8px;
     border: 1px solid #2a2a2a;
   }
@@ -108,7 +108,7 @@
     font-size: 13px;
     display: none;
     text-align: center;
-    margin-top: 8px;
+    margin-top: 6px;
   }
   .tgpost-alert.success {
     display: block;
@@ -143,11 +143,11 @@
     .tgpost-buttons-header {
       flex-direction: column;
       align-items: stretch;
-      gap: 8px;
+      gap: 6px;
     }
     .tgpost-btn-add {
       width: 100%;
-      padding: 10px;
+      padding: 9px;
       text-align: center;
     }
     .tgpost-btn-row {
@@ -167,35 +167,35 @@
 
 <div class="tgpost-wrap">
   <!-- 1. Идентификация бота и канала с бейджами -->
-  <div class="form-group" style="margin-bottom: 4px;">
-    <label>Текущий канал публикации:</label>
+  <div class="form-group" style="margin-bottom: 2px;">
+    <label style="margin-bottom: 4px;">Текущий канал публикации:</label>
     <div id="tgPostTargetDesc" class="tgpost-status-badge">
       <span class="tgpost-badge-warn">Проверка настроек Telegram...</span>
     </div>
   </div>
 
-  <!-- 2. Выбор и сортировка фото (отступ снизу уменьшен до 6px) -->
-  <div class="form-group" style="margin-bottom: 6px;">
-    <label>Фотографии поста (до 6 шт., можно перетаскивать):</label>
-    <div class="images-sort-container" id="tgPostImagesContainer">
+  <!-- 2. Выбор и сортировка фото -->
+  <div class="form-group" style="margin-bottom: 2px;">
+    <label style="margin-bottom: 4px;">Фотографии поста (до 6 шт., можно перетаскивать):</label>
+    <div class="images-sort-container" id="tgPostImagesContainer" style="margin-top: 0; margin-bottom: 0;">
       <div id="tgPostNoImagesNotice" style="color:#71717a; font-size:13px; margin:auto;">Фотографии не выбраны (сообщение будет текстовым)</div>
     </div>
   </div>
 
-  <!-- Кнопка выбора фото с устройства (отступ снизу уменьшен до 8px) -->
-  <div class="form-group" style="margin-bottom: 8px;">
-    <label>Выбрать фото с устройства:</label>
-    <input type="file" id="tgPostFilesInput" accept="image/*" multiple>
+  <!-- Кнопка выбора фото с устройства -->
+  <div class="form-group" style="margin-bottom: 2px;">
+    <label style="margin-bottom: 4px;">Выбрать фото с устройства:</label>
+    <input type="file" id="tgPostFilesInput" accept="image/*" multiple style="margin-bottom: 0;">
   </div>
 
-  <!-- 3. Текст сообщения (отступ снизу уменьшен до 8px) -->
-  <div class="form-group" style="margin-bottom: 8px;">
-    <label>Текст сообщения (поддерживаются отступы, Enter и форматирование *, **, _):</label>
-    <textarea id="tgPostTextInput" placeholder="Напишите текст новости, акции или поста...&#10;&#10;Можно делать отступы и списки." style="min-height: 140px;"></textarea>
+  <!-- 3. Текст сообщения -->
+  <div class="form-group" style="margin-bottom: 2px;">
+    <label style="margin-bottom: 4px;">Текст сообщения (поддерживаются отступы, Enter и форматирование *, **, _):</label>
+    <textarea id="tgPostTextInput" placeholder="Напишите текст новости, акции или поста...&#10;&#10;Можно делать отступы и списки." style="min-height: 130px; margin-bottom: 0;"></textarea>
   </div>
 
-  <!-- 4. Инлайн-кнопки (кнопка сверху во всю ширину на мобилке, список снизу) -->
-  <div class="form-group" style="margin-bottom: 8px;">
+  <!-- 4. Инлайн-кнопки -->
+  <div class="form-group" style="margin-bottom: 2px;">
     <div class="tgpost-buttons-header">
       <label style="margin-bottom: 0;">Инлайн-кнопки под постом (<span id="tgPostButtonsCount">0</span> из 5):</label>
       <button type="button" class="tgpost-btn-add" id="tgPostAddBtn">➕ Добавить кнопку</button>
@@ -228,7 +228,6 @@
   let postButtons = []; 
   let draggedImgIdx = null;
 
-  // Проверка и красивое отображение имени бота и канала
   async function checkTgStatus() {
     const tgToken = (localStorage.getItem('tg_token') || '').trim();
     const tgChannel = (localStorage.getItem('tg_channel') || '').trim();
@@ -266,7 +265,6 @@
 
   checkTgStatus();
 
-  // Добавление и рендер фотографий
   filesInput.addEventListener('change', () => {
     const files = Array.from(filesInput.files);
     for (const f of files) {
@@ -334,7 +332,6 @@
     });
   }
 
-  // Управление кнопками
   addBtn.addEventListener('click', () => {
     if (postButtons.length >= 5) {
       alert('Максимально можно добавить 5 кнопок!');
@@ -415,7 +412,6 @@
     }
   }
 
-  // Отправка сообщения в Telegram
   submitBtn.addEventListener('click', async () => {
     const tgToken = (localStorage.getItem('tg_token') || '').trim();
     const tgChannel = (localStorage.getItem('tg_channel') || '').trim();
