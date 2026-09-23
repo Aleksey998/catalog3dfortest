@@ -521,22 +521,41 @@
       </div>
     </div>
 
-    <div class="panel-box" id="catBox" style="display:none;">
-      <div class="form-title"><span>🗂️ Управление разделами каталога</span></div>
-      <div class="row" style="margin-bottom: 12px;">
-        <input type="hidden" id="editCatId">
-        <div class="col">
-          <input type="text" id="catNameInput" placeholder="Введите название нового раздела.">
+    <div class="panel-box" id="tgBotMessageBox" style="display:none;">
+      <div class="form-title form-title-clickable" id="tgBotHeaderClickable" title="Нажмите, чтобы свернуть или развернуть">
+        <span>🤖 Сообщение от TG бота</span>
+        <button type="button" class="btn-toggle-arrow" id="btnToggleTgBot">▲</button>
+      </div>
+
+      <div id="tgBotContent">
+        <div id="tgBotMessageContainer">
+          <div style="color:#71717a; font-size:13px; text-align:center; padding: 12px;">Загрузка содержимого tgbotmessage.html...</div>
         </div>
-        <button class="btn btn-green" id="btnSaveCat" style="width: auto; white-space: nowrap;">Добавить в список</button>
-        <button class="btn btn-cancel" id="btnCancelCat" style="width: auto;">Отмена</button>
+      </div>
+    </div>
+
+    <div class="panel-box" id="catBox" style="display:none;">
+      <div class="form-title form-title-clickable" id="catHeaderClickable" title="Нажмите, чтобы свернуть или развернуть">
+        <span>🗂️ Управление разделами каталога</span>
+        <button type="button" class="btn-toggle-arrow" id="btnToggleCat">▲</button>
       </div>
       
-      <div class="list-group" id="categoriesList"></div>
+      <div id="catContent">
+        <div class="row" style="margin-bottom: 12px;">
+          <input type="hidden" id="editCatId">
+          <div class="col">
+            <input type="text" id="catNameInput" placeholder="Введите название нового раздела.">
+          </div>
+          <button class="btn btn-green" id="btnSaveCat" style="width: auto; white-space: nowrap;">Добавить в список</button>
+          <button class="btn btn-cancel" id="btnCancelCat" style="width: auto;">Отмена</button>
+        </div>
+        
+        <div class="list-group" id="categoriesList"></div>
 
-      <div class="order-save-wrap" id="orderSaveWrap" style="display:none;">
-        <div class="unsaved-badge">⚠️ Есть несохраненные изменения в разделах! Нажмите кнопку ниже для отправки в репозиторий.</div>
-        <button class="btn btn-green" id="btnSaveCategoriesOrder" style="background: #059669;">💾 Сохранить все изменения разделов на GitHub</button>
+        <div class="order-save-wrap" id="orderSaveWrap" style="display:none;">
+          <div class="unsaved-badge">⚠️ Есть несохраненные изменения в разделах! Нажмите кнопку ниже для отправки в репозиторий.</div>
+          <button class="btn btn-green" id="btnSaveCategoriesOrder" style="background: #059669;">💾 Сохранить все изменения разделов на GitHub</button>
+        </div>
       </div>
     </div>
 
@@ -628,13 +647,23 @@
     const tgChannelInput = document.getElementById('tgChannel');
     const btnConnect = document.getElementById('btnConnect');
 
+    // Окно авторизации
     const authContent = document.getElementById('authContent');
     const authHeaderClickable = document.getElementById('authHeaderClickable');
     const btnToggleAuth = document.getElementById('btnToggleAuth');
 
+    // Сообщение от TG бота
+    const tgBotMessageBox = document.getElementById('tgBotMessageBox');
+    const tgBotContent = document.getElementById('tgBotContent');
+    const tgBotHeaderClickable = document.getElementById('tgBotHeaderClickable');
+    const btnToggleTgBot = document.getElementById('btnToggleTgBot');
+    const tgBotMessageContainer = document.getElementById('tgBotMessageContainer');
+
+    // Управление разделами
     const catBox = document.getElementById('catBox');
-    const editorBox = document.getElementById('editorBox');
-    const listBox = document.getElementById('listBox');
+    const catContent = document.getElementById('catContent');
+    const catHeaderClickable = document.getElementById('catHeaderClickable');
+    const btnToggleCat = document.getElementById('btnToggleCat');
     const categoriesList = document.getElementById('categoriesList');
     const catNameInput = document.getElementById('catNameInput');
     const editCatId = document.getElementById('editCatId');
@@ -643,6 +672,9 @@
     const orderSaveWrap = document.getElementById('orderSaveWrap');
     const btnSaveCategoriesOrder = document.getElementById('btnSaveCategoriesOrder');
 
+    // Редактор товара
+    const editorBox = document.getElementById('editorBox');
+    const listBox = document.getElementById('listBox');
     const formHeader = document.getElementById('formHeader');
     const productForm = document.getElementById('productForm');
     const editItemId = document.getElementById('editItemId');
@@ -678,14 +710,14 @@
     let verifiedBotUsername = '';
     let verifiedChannelTitle = '';
 
-    // Загрузка сохраненных данных
+    // Загрузка сохраненных данных авторизации
     tokenInput.value = localStorage.getItem('gh_token') || '';
     ownerInput.value = localStorage.getItem('gh_owner') || '';
     repoInput.value = localStorage.getItem('gh_repo') || '';
     tgTokenInput.value = localStorage.getItem('tg_token') || '';
     tgChannelInput.value = localStorage.getItem('tg_channel') || '';
 
-    // Управление сворачиванием блока авторизации
+    // 1. Управление сворачиванием: Окно авторизации
     function setAuthCollapsed(isCollapsed) {
       if (isCollapsed) {
         authContent.style.display = 'none';
@@ -709,11 +741,101 @@
       toggleAuthPanel();
     });
 
-    const savedAuthCollapsed = localStorage.getItem('auth_collapsed');
-    if (savedAuthCollapsed === '1') {
+    if (localStorage.getItem('auth_collapsed') === '1') {
       setAuthCollapsed(true);
     } else {
       setAuthCollapsed(false);
+    }
+
+    // 2. Управление сворачиванием: Сообщение от TG бота
+    function setTgBotCollapsed(isCollapsed) {
+      if (isCollapsed) {
+        tgBotContent.style.display = 'none';
+        btnToggleTgBot.textContent = '▼';
+        localStorage.setItem('tgbot_collapsed', '1');
+      } else {
+        tgBotContent.style.display = 'block';
+        btnToggleTgBot.textContent = '▲';
+        localStorage.setItem('tgbot_collapsed', '0');
+      }
+    }
+
+    function toggleTgBotPanel() {
+      const isCurrentlyCollapsed = tgBotContent.style.display === 'none';
+      setTgBotCollapsed(!isCurrentlyCollapsed);
+    }
+
+    tgBotHeaderClickable.addEventListener('click', toggleTgBotPanel);
+    btnToggleTgBot.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleTgBotPanel();
+    });
+
+    if (localStorage.getItem('tgbot_collapsed') === '1') {
+      setTgBotCollapsed(true);
+    } else {
+      setTgBotCollapsed(false);
+    }
+
+    // 3. Управление сворачиванием: Разделы каталога
+    function setCatCollapsed(isCollapsed) {
+      if (isCollapsed) {
+        catContent.style.display = 'none';
+        btnToggleCat.textContent = '▼';
+        localStorage.setItem('cat_collapsed', '1');
+      } else {
+        catContent.style.display = 'block';
+        btnToggleCat.textContent = '▲';
+        localStorage.setItem('cat_collapsed', '0');
+      }
+    }
+
+    function toggleCatPanel() {
+      const isCurrentlyCollapsed = catContent.style.display === 'none';
+      setCatCollapsed(!isCurrentlyCollapsed);
+    }
+
+    catHeaderClickable.addEventListener('click', toggleCatPanel);
+    btnToggleCat.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleCatPanel();
+    });
+
+    if (localStorage.getItem('cat_collapsed') === '1') {
+      setCatCollapsed(true);
+    } else {
+      setCatCollapsed(false);
+    }
+
+    // Загрузка файла tgbotmessage.html из репозитория
+    async function loadTgBotMessageFile() {
+      const token = tokenInput.value.trim();
+      const owner = ownerInput.value.trim();
+      const repo = repoInput.value.trim();
+
+      if (!token || !owner || !repo) return;
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/tgbotmessage.html?t=${Date.now()}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const htmlContent = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
+          tgBotMessageContainer.innerHTML = htmlContent;
+        } else if (res.status === 404) {
+          tgBotMessageContainer.innerHTML = `
+            <div style="color:#9ca3af; font-size:13px; text-align:center; padding: 14px; border: 1px dashed #3f3f46; border-radius: 8px;">
+              Файл <b>tgbotmessage.html</b> пока не найден в репозитории.<br>Создайте его в корне проекта на GitHub, и его содержимое появится здесь.
+            </div>`;
+        } else {
+          tgBotMessageContainer.innerHTML = `<div style="color:#ef4444; font-size:13px; text-align:center;">Не удалось загрузить tgbotmessage.html (HTTP ${res.status})</div>`;
+        }
+      } catch (err) {
+        console.warn('Ошибка загрузки tgbotmessage.html:', err);
+        tgBotMessageContainer.innerHTML = `<div style="color:#ef4444; font-size:13px; text-align:center;">Ошибка подключения при загрузке tgbotmessage.html</div>`;
+      }
     }
 
     // Установка индикатора поля ввода
@@ -768,7 +890,7 @@
         setFieldStatus('ghOwner', 'checking', 'Проверка доступа...');
         setFieldStatus('ghRepo', 'checking', 'Проверка доступа...');
         try {
-          const repoRes = await fetch(`https://api.github.com/repos/${ghOwner}/${repo}`, {
+          const repoRes = await fetch(`https://api.github.com/repos/${ghOwner}/${ghRepo}`, {
             headers: { 'Authorization': `Bearer ${ghToken}` }
           });
           if (repoRes.ok) {
@@ -835,7 +957,6 @@
         if (!tgChannel) setFieldStatus('tgChannel', 'none');
       }
 
-      // Обновление строки под чекбоксом Telegram
       updateTelegramTargetLabel(isBotValid, isChannelValid, tgChannel);
     }
 
@@ -948,6 +1069,7 @@
       await verifyAllCredentials();
 
       if (tokenInput.value.trim() && ownerInput.value.trim() && repoInput.value.trim()) {
+        tgBotMessageBox.style.display = 'block';
         catBox.style.display = 'block';
         editorBox.style.display = 'block';
         listBox.style.display = 'block';
@@ -1132,6 +1254,7 @@
 
       if (!token || !owner || !repo) return;
 
+      tgBotMessageBox.style.display = 'block';
       catBox.style.display = 'block';
       editorBox.style.display = 'block';
       listBox.style.display = 'block';
@@ -1139,6 +1262,9 @@
       showStatus('loading', '⏳ Загрузка данных...');
 
       try {
+        // Подгружаем содержимое tgbotmessage.html
+        loadTgBotMessageFile();
+
         const catRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/categories.json?t=${Date.now()}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -1163,6 +1289,7 @@
           allProducts = JSON.parse(decodeURIComponent(escape(atob(prodData.content.replace(/\s/g, '')))));
         }
 
+        tgBotMessageBox.style.display = 'block';
         catBox.style.display = 'block';
         editorBox.style.display = 'block';
         listBox.style.display = 'block';
@@ -1180,6 +1307,7 @@
         productsList.innerHTML = '';
         itemsCount.textContent = '0';
 
+        tgBotMessageBox.style.display = 'none';
         catBox.style.display = 'none';
         editorBox.style.display = 'none';
         listBox.style.display = 'none';
@@ -1300,7 +1428,6 @@
       const owner = ownerInput.value.trim();
       const repo = repoInput.value.trim();
 
-      // Запрашиваем свежий SHA файла перед отправкой
       const freshRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/categories.json?ref=main&t=${Date.now()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -1469,7 +1596,6 @@
       showStatus('loading', '⏳ Подготовка файлов к отправке...');
 
       try {
-        // Запрашиваем СВЕЖИЙ хэш ветки main
         const branchRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/branches/main?t=${Date.now()}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -1478,7 +1604,6 @@
         const baseCommitSha = branchData.commit.sha;
         const baseTreeSha = branchData.commit.commit.tree.sha;
 
-        // Запрашиваем актуальный products.json
         const freshProdRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products.json?ref=main&t=${Date.now()}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -1490,7 +1615,6 @@
 
         const treeItems = [];
 
-        // Удаление старых фото
         if (imagesToDeleteFromGithub.length > 0) {
           for (const imgPath of imagesToDeleteFromGithub) {
             treeItems.push({
@@ -1505,7 +1629,6 @@
         let finalImages = [];
         const timestamp = Date.now();
 
-        // Заливка фото
         for (let i = 0; i < formImages.length; i++) {
           const item = formImages[i];
           if (item.type === 'existing') {
@@ -1607,7 +1730,7 @@
         });
         if (!updateRefRes.ok) throw new Error(`Ошибка обновления ветки: ${updateRefRes.statusText}`);
 
-        // 4. Отправка в Telegram-канал
+        // Отправка в Telegram-канал
         let tgSentSuccess = true;
         let tgErrorMessage = '';
 
@@ -1630,25 +1753,21 @@
             const miniAppName = 'catalogp3d'; 
             const miniAppUrl = `https://t.me/${botUsername}/${miniAppName}?startapp=item_${updatedItem.id}`;
             
-            // Прямая цена без фильтрации + ₽
             const userPrice = String(updatedItem.price || '').trim();
             const orderMsg = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${updatedItem.title}" по цене ${userPrice} ₽. Подскажите пожалуйста по срокам изготовления.`;
             const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
             
             const browserCatalogUrl = `https://${owner}.github.io/${repo}/index.html?item=${updatedItem.id}`;
 
-            // Экранирование спецсимволов HTML
             const escapeHtml = (str) => String(str || '')
               .replace(/&/g, '&amp;')
               .replace(/</g, '&lt;')
               .replace(/>/g, '&gt;');
 
-            // Всеядный парсер с балансировщиком тегов
             function parseCustomMarkdown(text) {
               if (!text) return '';
               let s = escapeHtml(text);
 
-              // 1. Строго от сложных комбинаций к простым (порядок знаков равнозначен!)
               s = s.replace(/\*\*\*_(.*?)_?\*\*\*/g, '<b><i><u>$1</u></i></b>');
               s = s.replace(/(\*\*_|_\*\*)(.*?)(_\*\*|\*\*_)/g, '<i><u>$2</u></i>');
               s = s.replace(/(\*_|_\*)(.*?)(_\*|\*_)/g, '<b><u>$2</u></b>');
@@ -1656,7 +1775,6 @@
               s = s.replace(/\*(.*?)\*/g, '<b>$1</b>');
               s = s.replace(/_(.*?)_/g, '<u>$1</u>');
 
-              // 2. Автозакрытие повисших тегов
               const openStack = [];
               const tagRegex = /<\/?([biu])>/g;
               let match;
@@ -1679,7 +1797,6 @@
               return s;
             }
 
-            // Обрезка текста до 150 символов
             let rawDesc = (updatedItem.desc || '');
             let isLong = rawDesc.length > 150;
             let targetText = rawDesc;
@@ -1740,28 +1857,20 @@
           }
         }
 
-        // ========================================================
-        // ИТОГОВЫЙ СТАТУС ДЛЯ ПОЛЬЗОВАТЕЛЯ
-        // ========================================================
+        // Итоговый статус
         if (shouldPublishToTg && !tgSentSuccess) {
-          // ЖЕЛТЫЙ СТАТУС: на GitHub сохранился, но Telegram выдал ошибку
           showStatus('warning', `⚠️ Товар сохранён в каталоге, но в Telegram не ушёл: ${tgErrorMessage}`);
         } else {
-          // ЗЕЛЕНЫЙ СТАТУС: честно разделяем НОВЫЙ товар и ИЗМЕНЕНИЯ
           let successText = '';
-          
           if (isEdit) {
-            // Редактировали старый товар
             successText = shouldPublishToTg 
               ? '✅ Изменения товара сохранены на GitHub и опубликованы в Telegram!' 
               : '✅ Изменения товара успешно сохранены на GitHub!';
           } else {
-            // Выложили абсолютно НОВЫЙ товар
             successText = shouldPublishToTg 
               ? '✅ Новый товар успешно сохранён на GitHub и опубликован в Telegram!' 
               : '✅ Новый товар успешно сохранён на GitHub!';
           }
-
           showStatus('success', successText);
         }
 
@@ -1801,7 +1910,6 @@
       const owner = ownerInput.value.trim();
       const repo = repoInput.value.trim();
 
-      // Запрашиваем свежий SHA файла перед отправкой
       const freshRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products.json?ref=main&t=${Date.now()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -1831,7 +1939,6 @@
       statusMsg.textContent = msg;
       statusMsg.style.display = 'block';
 
-      // Автоскрытие для success (5 сек) и warning (8 сек)
       if (type === 'success' || type === 'warning') {
         window.statusAutoClearTimer = setTimeout(() => {
           hideStatus();
