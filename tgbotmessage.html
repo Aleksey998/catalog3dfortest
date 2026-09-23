@@ -1,0 +1,486 @@
+<!-- tgbotmessage.html -->
+<style>
+  .tgpost-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .tgpost-status-badge {
+    font-size: 12px;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    padding: 8px 12px;
+    border-radius: 8px;
+    width: fit-content;
+  }
+  .tgpost-badge-item {
+    color: #4ade80;
+    font-weight: 700;
+    background: rgba(74, 222, 128, 0.12);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .tgpost-badge-warn {
+    color: #f59e0b;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tgpost-btn-secondary {
+    background: #27272a;
+    color: #f3f4f6;
+    border: 1px solid #3f3f46;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tgpost-btn-secondary:hover {
+    border-color: #4ade80;
+    color: #4ade80;
+  }
+  .tgpost-buttons-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .tgpost-btn-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: #141414;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #2a2a2a;
+  }
+  .tgpost-btn-row input {
+    margin-bottom: 0 !important;
+  }
+  .tgpost-btn-del {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .tgpost-btn-del:hover {
+    background: #b91c1c;
+  }
+  .tgpost-alert {
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    display: none;
+    text-align: center;
+    margin-top: 8px;
+  }
+  .tgpost-alert.success {
+    display: block;
+    background: rgba(74, 222, 128, 0.15);
+    border: 1px solid #4ade80;
+    color: #4ade80;
+  }
+  .tgpost-alert.warning {
+    display: block;
+    background: rgba(234, 179, 8, 0.15);
+    border: 1px solid #eab308;
+    color: #facc15;
+  }
+  .tgpost-alert.error {
+    display: block;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid #ef4444;
+    color: #ef4444;
+  }
+  .tgpost-alert.loading {
+    display: block;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid #3b82f6;
+    color: #60a5fa;
+  }
+</style>
+
+<div class="tgpost-wrap">
+  <!-- 1. Идентификация бота и канала -->
+  <div class="form-group" style="margin-bottom: 4px;">
+    <label>Текущий канал публикации:</label>
+    <div id="tgPostTargetDesc" class="tgpost-status-badge">
+      <span class="tgpost-badge-warn">Проверка настроек Telegram...</span>
+    </div>
+  </div>
+
+  <!-- 2. Выбор и сортировка фото -->
+  <div class="form-group">
+    <label>Фотографии поста (до 6 шт., можно перетаскивать):</label>
+    <div class="images-sort-container" id="tgPostImagesContainer">
+      <div id="tgPostNoImagesNotice" style="color:#71717a; font-size:13px; margin:auto;">Фотографии не выбраны (сообщение будет текстовым)</div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Выбрать фото с устройства:</label>
+    <input type="file" id="tgPostFilesInput" accept="image/*" multiple>
+  </div>
+
+  <!-- 3. Текст сообщения -->
+  <div class="form-group">
+    <label>Текст сообщения (поддерживаются отступы, Enter и форматирование *, **, _):</label>
+    <textarea id="tgPostTextInput" placeholder="Напишите текст новости, акции или поста...&#10;&#10;Можно делать отступы и списки." style="min-height: 140px;"></textarea>
+  </div>
+
+  <!-- 4. Инлайн-кнопки (0 до 5) -->
+  <div class="form-group">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+      <label style="margin-bottom: 0;">Инлайн-кнопки под постом (<span id="tgPostButtonsCount">0</span> из 5):</label>
+      <button type="button" class="tgpost-btn-secondary" id="tgPostAddBtn" style="padding: 4px 10px; font-size: 12px;">➕ Добавить кнопку</button>
+    </div>
+    <div class="tgpost-buttons-list" id="tgPostButtonsList"></div>
+  </div>
+
+  <!-- 5. Кнопка отправки -->
+  <div style="margin-top: 8px;">
+    <button type="button" class="btn btn-green" id="tgPostSubmitBtn" style="width: 100%; padding: 12px; font-size: 14px;">🚀 Отправить сообщение в канал</button>
+  </div>
+
+  <div id="tgPostAlertBox" class="tgpost-alert"></div>
+</div>
+
+<script>
+(() => {
+  // Элементы модуля
+  const targetDesc = document.getElementById('tgPostTargetDesc');
+  const imagesContainer = document.getElementById('tgPostImagesContainer');
+  const noImagesNotice = document.getElementById('tgPostNoImagesNotice');
+  const filesInput = document.getElementById('tgPostFilesInput');
+  const textInput = document.getElementById('tgPostTextInput');
+  const addBtn = document.getElementById('tgPostAddBtn');
+  const buttonsList = document.getElementById('tgPostButtonsList');
+  const buttonsCountLabel = document.getElementById('tgPostButtonsCount');
+  const submitBtn = document.getElementById('tgPostSubmitBtn');
+  const alertBox = document.getElementById('tgPostAlertBox');
+
+  let postImages = []; // { id, src, file }
+  let postButtons = []; // { text, url }
+  let draggedImgIdx = null;
+
+  // 1. Проверка бота и канала из localStorage
+  function checkTgStatus() {
+    const tgToken = (localStorage.getItem('tg_token') || '').trim();
+    const tgChannel = (localStorage.getItem('tg_channel') || '').trim();
+
+    if (!tgToken || !tgChannel) {
+      targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Токен бота или канал не заполнены в окне авторизации выше</span>`;
+      return false;
+    }
+
+    targetDesc.innerHTML = `
+      <span>Отправка через бота в:</span>
+      <span class="tgpost-badge-item">${tgChannel}</span>
+    `;
+    return true;
+  }
+
+  checkTgStatus();
+
+  // 2. Добавление и рендер фотографий
+  filesInput.addEventListener('change', () => {
+    const files = Array.from(filesInput.files);
+    for (const f of files) {
+      if (postImages.length >= 6) {
+        alert('Максимум 6 фотографий для одного поста!');
+        break;
+      }
+      postImages.push({
+        id: 'post_img_' + Math.random().toString(36).substring(2, 9),
+        src: URL.createObjectURL(f),
+        file: f
+      });
+    }
+    filesInput.value = '';
+    renderPostImages();
+  });
+
+  function renderPostImages() {
+    imagesContainer.innerHTML = '';
+    if (postImages.length === 0) {
+      imagesContainer.appendChild(noImagesNotice);
+      return;
+    }
+
+    postImages.forEach((imgObj, idx) => {
+      const card = document.createElement('div');
+      card.className = 'img-preview-card';
+      card.draggable = true;
+      card.dataset.index = idx;
+
+      card.innerHTML = `
+        <img src="${imgObj.src}">
+        ${idx === 0 ? '<span class="img-badge-main">Главная</span>' : ''}
+        <button type="button" class="img-remove-btn" title="Удалить">&times;</button>
+      `;
+
+      card.querySelector('.img-remove-btn').onclick = (e) => {
+        e.stopPropagation();
+        postImages.splice(idx, 1);
+        renderPostImages();
+      };
+
+      card.addEventListener('dragstart', (e) => {
+        draggedImgIdx = idx;
+        card.classList.add('dragging');
+      });
+      card.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        card.classList.add('drag-over');
+      });
+      card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+      card.addEventListener('drop', (e) => {
+        e.preventDefault();
+        card.classList.remove('drag-over');
+        if (draggedImgIdx === null || draggedImgIdx === idx) return;
+        const [moved] = postImages.splice(draggedImgIdx, 1);
+        postImages.splice(idx, 0, moved);
+        renderPostImages();
+      });
+      card.addEventListener('dragend', () => {
+        document.querySelectorAll('.img-preview-card').forEach(el => el.classList.remove('drag-over', 'dragging'));
+      });
+
+      imagesContainer.appendChild(card);
+    });
+  }
+
+  // 3. Управление кнопками
+  addBtn.addEventListener('click', () => {
+    if (postButtons.length >= 5) {
+      alert('Максимально можно добавить 5 кнопок!');
+      return;
+    }
+    postButtons.push({ text: '', url: '' });
+    renderPostButtons();
+  });
+
+  function renderPostButtons() {
+    buttonsList.innerHTML = '';
+    buttonsCountLabel.textContent = postButtons.length;
+
+    postButtons.forEach((btn, idx) => {
+      const row = document.createElement('div');
+      row.className = 'tgpost-btn-row';
+      row.innerHTML = `
+        <input type="text" placeholder="Название кнопки (например: Наш сайт)" value="${btn.text}" style="flex:1;">
+        <input type="text" placeholder="https://..." value="${btn.url}" style="flex:1.5;">
+        <button type="button" class="tgpost-btn-del" title="Удалить кнопку">&times;</button>
+      `;
+
+      const inputs = row.querySelectorAll('input');
+      inputs[0].addEventListener('input', (e) => { postButtons[idx].text = e.target.value; });
+      inputs[1].addEventListener('input', (e) => { postButtons[idx].url = e.target.value; });
+
+      row.querySelector('.tgpost-btn-del').addEventListener('click', () => {
+        postButtons.splice(idx, 1);
+        renderPostButtons();
+      });
+
+      buttonsList.appendChild(row);
+    });
+  }
+
+  // 4. Парсер разметки текста
+  function parseHtmlMarkup(text) {
+    if (!text) return '';
+    const escapeHtml = (str) => String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    let s = escapeHtml(text);
+    s = s.replace(/\*\*\*_(.*?)_?\*\*\*/g, '<b><i><u>$1</u></i></b>');
+    s = s.replace(/(\*\*_|_\*\*)(.*?)(_\*\*|\*\*_)/g, '<i><u>$2</u></i>');
+    s = s.replace(/(\*_|_\*)(.*?)(_\*|\*_)/g, '<b><u>$2</u></b>');
+    s = s.replace(/\*\*(.*?)\*\*/g, '<i>$1</i>');
+    s = s.replace(/\*(.*?)\*/g, '<b>$1</b>');
+    s = s.replace(/_(.*?)_/g, '<u>$1</u>');
+
+    const openStack = [];
+    const tagRegex = /<\/?([biu])>/g;
+    let match;
+    while ((match = tagRegex.exec(s)) !== null) {
+      const full = match[0];
+      const name = match[1];
+      if (!full.startsWith('</')) {
+        openStack.push(name);
+      } else {
+        if (openStack.length > 0 && openStack[openStack.length - 1] === name) {
+          openStack.pop();
+        }
+      }
+    }
+    while (openStack.length > 0) {
+      s += `</${openStack.pop()}>`;
+    }
+    return s;
+  }
+
+  function showPostAlert(type, msg) {
+    alertBox.className = `tgpost-alert ${type}`;
+    alertBox.textContent = msg;
+    if (type === 'success' || type === 'warning') {
+      setTimeout(() => { alertBox.className = 'tgpost-alert'; }, 6000);
+    }
+  }
+
+  // 5. Отправка сообщения в Telegram
+  submitBtn.addEventListener('click', async () => {
+    const tgToken = (localStorage.getItem('tg_token') || '').trim();
+    const tgChannel = (localStorage.getItem('tg_channel') || '').trim();
+
+    if (!tgToken || !tgChannel) {
+      alert('Заполните токен бота и канал в блоке авторизации выше!');
+      return;
+    }
+
+    const rawText = textInput.value.trim();
+    if (!rawText && postImages.length === 0) {
+      alert('Введите текст сообщения или прикрепите хотя бы одно фото!');
+      return;
+    }
+
+    // Валидация кнопок
+    for (const b of postButtons) {
+      if (!b.text.trim() || !b.url.trim()) {
+        alert('Заполните название и ссылку для каждой добавленной кнопки или удалите лишние!');
+        return;
+      }
+      if (!b.url.startsWith('http://') && !b.url.startsWith('https://') && !b.url.startsWith('tg://')) {
+        alert(`Ссылка в кнопке "${b.text}" должна начинаться с https:// или tg://`);
+        return;
+      }
+    }
+
+    const confirmMsg = `Отправить сообщение в канал ${tgChannel}?${postImages.length > 0 ? '\nФотографий: ' + postImages.length : ''}${postButtons.length > 0 ? '\nКнопок: ' + postButtons.length : ''}`;
+    if (!confirm(confirmMsg)) return;
+
+    submitBtn.disabled = true;
+    showPostAlert('loading', '⏳ Отправка сообщения в Telegram...');
+
+    try {
+      const formattedText = parseHtmlMarkup(rawText);
+
+      // Формируем клавиатуру (кнопки друг под другом)
+      let replyMarkup = undefined;
+      if (postButtons.length > 0) {
+        replyMarkup = {
+          inline_keyboard: postButtons.map(b => [{ text: b.text.trim(), url: b.url.trim() }])
+        };
+      }
+
+      let res, data;
+
+      if (postImages.length === 0) {
+        // --- ВАРИАНТ А: Только текст ---
+        res = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: tgChannel,
+            text: formattedText,
+            parse_mode: 'HTML',
+            reply_markup: replyMarkup
+          })
+        });
+        data = await res.json();
+      } else if (postImages.length === 1) {
+        // --- ВАРИАНТ Б: Одно фото + текст + кнопки ---
+        const formData = new FormData();
+        formData.append('chat_id', tgChannel);
+        formData.append('photo', postImages[0].file);
+        if (formattedText) {
+          formData.append('caption', formattedText);
+          formData.append('parse_mode', 'HTML');
+        }
+        if (replyMarkup) {
+          formData.append('reply_markup', JSON.stringify(replyMarkup));
+        }
+
+        res = await fetch(`https://api.telegram.org/bot${tgToken}/sendPhoto`, {
+          method: 'POST',
+          body: formData
+        });
+        data = await res.json();
+      } else {
+        // --- ВАРИАНТ В: Альбом от 2 до 6 фото (sendMediaGroup) ---
+        const formData = new FormData();
+        formData.append('chat_id', tgChannel);
+
+        const mediaArray = postImages.map((img, i) => {
+          formData.append(`photo_${i}`, img.file);
+          const obj = {
+            type: 'photo',
+            media: `attach://photo_${i}`
+          };
+          if (i === 0 && formattedText) {
+            obj.caption = formattedText;
+            obj.parse_mode = 'HTML';
+          }
+          return obj;
+        });
+
+        formData.append('media', JSON.stringify(mediaArray));
+
+        res = await fetch(`https://api.telegram.org/bot${tgToken}/sendMediaGroup`, {
+          method: 'POST',
+          body: formData
+        });
+        data = await res.json();
+
+        // Если в альбоме были кнопки, Telegram API не умеет цеплять их к mediaGroup,
+        // поэтому отправляем их отдельным аккуратным сообщением-меню сразу следом:
+        if (data.ok && replyMarkup) {
+          await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: tgChannel,
+              text: '⬇️ Ссылки и действия:',
+              reply_markup: replyMarkup
+            })
+          });
+        }
+      }
+
+      if (data.ok) {
+        showPostAlert('success', '✅ Сообщение успешно отправлено в канал!');
+        // Очищаем форму
+        textInput.value = '';
+        postImages = [];
+        postButtons = [];
+        renderPostImages();
+        renderPostButtons();
+      } else {
+        showPostAlert('error', `❌ Ошибка Telegram: ${data.description || 'Не удалось отправить'}`);
+      }
+    } catch (err) {
+      showPostAlert('error', `❌ Ошибка сети: ${err.message}`);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+})();
+</script>
