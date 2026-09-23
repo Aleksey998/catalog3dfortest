@@ -951,6 +951,11 @@
       if (urlParams.has('item')) {
         singleItemId = urlParams.get('item');
       }
+      
+      // ДОБАВЛЯЕМ ВОТ ЭТИ 3 СТРОЧКИ: перехват ?cat=
+      if (urlParams.has('cat')) {
+        currentCategory = urlParams.get('cat').trim();
+      }
 
       // 2. Бронебойный перехват Telegram Mini App
       if (!singleItemId) {
@@ -1030,7 +1035,11 @@
           resetViewWrap.style.display = 'none';
           searchWrap.style.display = 'block';
           dropdownWrap.style.display = 'block';
-          window.history.pushState({}, '', window.location.pathname);
+          if (id === 'all') {
+            window.history.pushState({}, '', window.location.pathname);
+          } else {
+            window.history.pushState({}, '', `${window.location.pathname}?cat=${id}`);
+          }
           renderProducts();
         });
         dropdownMenu.appendChild(item);
