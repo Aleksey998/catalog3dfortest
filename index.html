@@ -1095,7 +1095,7 @@
 
       const displayPrice = formatPrice(item.price);
       const cleanPrice = String(item.price || '').trim();
-      const msgText = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${item.title}" (${cleanPrice}). Подскажите по срокам изготовления.`;
+      const msgText = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${item.title}" по цене ${cleanPrice} ₽. Подскажите пожалуйста по срокам изготовления.`;
       const tgLink = `https://t.me/${TG_USERNAME}?text=${encodeURIComponent(msgText)}`;
       const instLink = `https://ig.me/m/${INST_USERNAME}`;
 
@@ -1264,7 +1264,7 @@
       pageItems.forEach((item, itemIdx) => {
         const displayPrice = formatPrice(item.price);
         const cleanPrice = String(item.price || '').trim();
-        const msgText = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${item.title}" (${cleanPrice}). Подскажите по срокам изготовления.`;
+        const msgText = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${item.title}" по цене ${cleanPrice} ₽. Подскажите пожалуйста по срокам изготовления.`;
         const tgLink = `https://t.me/${TG_USERNAME}?text=${encodeURIComponent(msgText)}`;
         const instLink = `https://ig.me/m/${INST_USERNAME}`;
 
