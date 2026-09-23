@@ -1611,7 +1611,7 @@
         let tgSentSuccess = true;
         let tgErrorMessage = '';
 
-        if (shouldPublishToTg && !isEdit) {
+        if (shouldPublishToTg) {
           showStatus('loading', '⏳ Публикация новинки в Telegram-канал...');
           try {
             const firstImg = (finalImages && finalImages.length > 0) ? finalImages[0] : '';
@@ -1698,8 +1698,12 @@
             const safeTitle = escapeHtml(updatedItem.title);
             const safePrice = escapeHtml(updatedItem.price);
 
+            const postHeader = isEdit 
+              ? `🔄 <i>Обновление товара в каталоге Pogodin_3d!</i>` 
+              : `🔥 <i>Новинка в каталоге Pogodin_3d!</i>`;
+
             const caption = 
-              `🔥 <i>Новинка в каталоге Pogodin_3d!</i>\n\n` +
+              `${postHeader}\n\n` +
               `📦 <b>${safeTitle}</b>\n` +
               `💰 <b><u>Цена:</u></b> <b>${safePrice} ₽</b>\n\n` +
               `${formattedDesc}\n\n` +
@@ -1739,12 +1743,18 @@
         // ========================================================
         // ИТОГОВЫЙ СТАТУС ДЛЯ ПОЛЬЗОВАТЕЛЯ
         // ========================================================
-        if (shouldPublishToTg && !isEdit && !tgSentSuccess) {
-          // ЖЕЛТЫЙ СТАТУС: товар в каталоге сохранился, но Telegram отклонил пост
+        if (shouldPublishToTg && !tgSentSuccess) {
+          // ЖЕЛТЫЙ СТАТУС: на GitHub сохранился, но Telegram выдал ошибку
           showStatus('warning', `⚠️ Товар сохранён в каталоге, но в Telegram не ушёл: ${tgErrorMessage}`);
         } else {
-          // ЗЕЛЕНЫЙ СТАТУС: всё выполнено безупречно
-          showStatus('success', isEdit ? '✅ Изменения товара сохранены на GitHub!' : '✅ Товар успешно сохранён и опубликован в Telegram!');
+          // ЗЕЛЕНЫЙ СТАТУС: выбираем понятный текст в зависимости от того, была ли включена публикация
+          let successText = '✅ Изменения товара сохранены на GitHub!';
+          if (shouldPublishToTg) {
+            successText = isEdit 
+              ? '✅ Изменения товара сохранены и опубликованы в Telegram!' 
+              : '✅ Товар успешно сохранён и опубликован в Telegram!';
+          }
+          showStatus('success', successText);
         }
 
         resetForm();
