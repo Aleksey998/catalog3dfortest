@@ -768,7 +768,7 @@
         setFieldStatus('ghOwner', 'checking', 'Проверка доступа...');
         setFieldStatus('ghRepo', 'checking', 'Проверка доступа...');
         try {
-          const repoRes = await fetch(`https://api.github.com/repos/${ghOwner}/${ghRepo}`, {
+          const repoRes = await fetch(`https://api.github.com/repos/${ghOwner}/${repo}`, {
             headers: { 'Authorization': `Bearer ${ghToken}` }
           });
           if (repoRes.ok) {
@@ -1391,7 +1391,6 @@
       pageItems.forEach(item => {
         const catObj = allCategories.find(c => c.id === item.category);
         const catLabel = catObj ? catObj.name : item.category;
-        const priceFormatted = String(item.price).includes('₽') ? item.price : `${item.price} ₽`;
         const img = item.images && item.images.length > 0 ? item.images[0] : 'nofoto.jpg';
 
         const row = document.createElement('div');
@@ -1401,7 +1400,7 @@
             <img src="${img}" class="item-thumb" onerror="this.src='nofoto.jpg'">
             <div class="item-info">
               <div class="item-name">${item.title}</div>
-              <div class="item-meta">${priceFormatted} • ${catLabel}</div>
+              <div class="item-meta">${item.price} ₽ • ${catLabel}</div>
             </div>
           </div>
           <div class="item-actions">
@@ -1631,9 +1630,9 @@
             const miniAppName = 'catalogp3d'; 
             const miniAppUrl = `https://t.me/${botUsername}/${miniAppName}?startapp=item_${updatedItem.id}`;
             
-            const rawPrice = String(updatedItem.price || '').trim();
-            const priceText = rawPrice.includes('₽') || rawPrice.toLowerCase().includes('руб') ? rawPrice : `${rawPrice} ₽`;
-            const orderMsg = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${updatedItem.title}" по цене ${priceText}. Подскажите пожалуйста по срокам изготовления.`;
+            // Прямая цена без фильтрации + ₽
+            const userPrice = String(updatedItem.price || '').trim();
+            const orderMsg = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${updatedItem.title}" по цене ${userPrice} ₽. Подскажите пожалуйста по срокам изготовления.`;
             const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
             
             const browserCatalogUrl = `https://${owner}.github.io/${repo}/index.html?item=${updatedItem.id}`;
