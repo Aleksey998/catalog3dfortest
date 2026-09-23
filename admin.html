@@ -1391,6 +1391,7 @@
       pageItems.forEach(item => {
         const catObj = allCategories.find(c => c.id === item.category);
         const catLabel = catObj ? catObj.name : item.category;
+        const priceFormatted = String(item.price).includes('₽') ? item.price : `${item.price} ₽`;
         const img = item.images && item.images.length > 0 ? item.images[0] : 'nofoto.jpg';
 
         const row = document.createElement('div');
@@ -1400,7 +1401,7 @@
             <img src="${img}" class="item-thumb" onerror="this.src='nofoto.jpg'">
             <div class="item-info">
               <div class="item-name">${item.title}</div>
-              <div class="item-meta">${item.price} • ${catLabel}</div>
+              <div class="item-meta">${priceFormatted} • ${catLabel}</div>
             </div>
           </div>
           <div class="item-actions">
@@ -1701,7 +1702,7 @@
             const caption = 
               `🔥 <i>Новинка в каталоге Pogodin_3d!</i>\n\n` +
               `📦 <b>${safeTitle}</b>\n` +
-              `💰 <b><u>Цена:</u></b> <b>${safePrice}</b>\n\n` +
+              `💰 <b><u>Цена:</u></b> <b>${safePrice} ₽</b>\n\n` +
               `${formattedDesc}\n\n` +
               `⬇️ <i>Заказывайте прямо сейчас</i> ⬇️`;
 
