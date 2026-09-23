@@ -1631,9 +1631,9 @@
             const miniAppName = 'catalogp3d'; 
             const miniAppUrl = `https://t.me/${botUsername}/${miniAppName}?startapp=item_${updatedItem.id}`;
             
-            const rawPrice = String(updatedItem.price).replace(/[^\d\s.,]/g, '').trim();
-            const cleanPrice = String(updatedItem.price || '').trim();
-            const orderMsg = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${updatedItem.title}" по цене ${rawPrice} ₽. Подскажите пожалуйста по срокам изготовления.`;
+            const rawPrice = String(updatedItem.price || '').trim();
+            const priceText = rawPrice.includes('₽') || rawPrice.toLowerCase().includes('руб') ? rawPrice : `${rawPrice} ₽`;
+            const orderMsg = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${updatedItem.title}" по цене ${priceText}. Подскажите пожалуйста по срокам изготовления.`;
             const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
             
             const browserCatalogUrl = `https://${owner}.github.io/${repo}/index.html?item=${updatedItem.id}`;
