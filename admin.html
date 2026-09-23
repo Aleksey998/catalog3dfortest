@@ -1747,13 +1747,21 @@
           // ЖЕЛТЫЙ СТАТУС: на GitHub сохранился, но Telegram выдал ошибку
           showStatus('warning', `⚠️ Товар сохранён в каталоге, но в Telegram не ушёл: ${tgErrorMessage}`);
         } else {
-          // ЗЕЛЕНЫЙ СТАТУС: выбираем понятный текст в зависимости от того, была ли включена публикация
-          let successText = '✅ Изменения товара сохранены на GitHub!';
-          if (shouldPublishToTg) {
-            successText = isEdit 
+          // ЗЕЛЕНЫЙ СТАТУС: честно разделяем НОВЫЙ товар и ИЗМЕНЕНИЯ
+          let successText = '';
+          
+          if (isEdit) {
+            // Редактировали старый товар
+            successText = shouldPublishToTg 
               ? '✅ Изменения товара сохранены и опубликованы в Telegram!' 
-              : '✅ Товар успешно сохранён и опубликован в Telegram!';
+              : '✅ Изменения товара успешно сохранены на GitHub!';
+          } else {
+            // Выложили абсолютно НОВЫЙ товар
+            successText = shouldPublishToTg 
+              ? '✅ Товар успешно сохранён и опубликован в Telegram!' 
+              : '✅ Новый товар успешно сохранён на GitHub!';
           }
+
           showStatus('success', successText);
         }
 
