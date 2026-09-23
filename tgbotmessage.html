@@ -38,7 +38,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     gap: 10px;
   }
   .tgpost-btn-add {
@@ -174,27 +174,28 @@
     </div>
   </div>
 
-  <!-- 2. Выбор и сортировка фото -->
-  <div class="form-group">
+  <!-- 2. Выбор и сортировка фото (отступ снизу уменьшен до 6px) -->
+  <div class="form-group" style="margin-bottom: 6px;">
     <label>Фотографии поста (до 6 шт., можно перетаскивать):</label>
     <div class="images-sort-container" id="tgPostImagesContainer">
       <div id="tgPostNoImagesNotice" style="color:#71717a; font-size:13px; margin:auto;">Фотографии не выбраны (сообщение будет текстовым)</div>
     </div>
   </div>
 
-  <div class="form-group">
+  <!-- Кнопка выбора фото с устройства (отступ снизу уменьшен до 8px) -->
+  <div class="form-group" style="margin-bottom: 8px;">
     <label>Выбрать фото с устройства:</label>
     <input type="file" id="tgPostFilesInput" accept="image/*" multiple>
   </div>
 
-  <!-- 3. Текст сообщения -->
-  <div class="form-group">
+  <!-- 3. Текст сообщения (отступ снизу уменьшен до 8px) -->
+  <div class="form-group" style="margin-bottom: 8px;">
     <label>Текст сообщения (поддерживаются отступы, Enter и форматирование *, **, _):</label>
     <textarea id="tgPostTextInput" placeholder="Напишите текст новости, акции или поста...&#10;&#10;Можно делать отступы и списки." style="min-height: 140px;"></textarea>
   </div>
 
   <!-- 4. Инлайн-кнопки (кнопка сверху во всю ширину на мобилке, список снизу) -->
-  <div class="form-group">
+  <div class="form-group" style="margin-bottom: 8px;">
     <div class="tgpost-buttons-header">
       <label style="margin-bottom: 0;">Инлайн-кнопки под постом (<span id="tgPostButtonsCount">0</span> из 5):</label>
       <button type="button" class="tgpost-btn-add" id="tgPostAddBtn">➕ Добавить кнопку</button>
@@ -203,7 +204,7 @@
   </div>
 
   <!-- 5. Кнопка отправки -->
-  <div style="margin-top: 8px;">
+  <div style="margin-top: 4px;">
     <button type="button" class="btn btn-green" id="tgPostSubmitBtn" style="width: 100%; padding: 12px; font-size: 14px;">🚀 Отправить сообщение в канал</button>
   </div>
 
@@ -237,10 +238,8 @@
       return;
     }
 
-    // Если в глобальной админке уже определен username бота — берем его
     let botUsername = window.verifiedBotUsername || '';
 
-    // Если нет — быстро узнаем имя бота через getMe
     if (!botUsername) {
       try {
         const res = await fetch(`https://api.telegram.org/bot${tgToken}/getMe`);
