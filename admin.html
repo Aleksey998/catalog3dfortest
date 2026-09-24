@@ -1771,7 +1771,7 @@
             
             // 3. Формирование ссылки заказа боту
             const userPrice = String(updatedItem.price || '').trim();
-            const orderMsg = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${updatedItem.title}" по цене ${userPrice} ₽. Подскажите пожалуйста по срокам изготовления.`;
+            const orderMsg = `Здравствуйте! Хочу сделать заказ: "${updatedItem.title}" по цене ${userPrice} ₽. Подскажите пожалуйста по срокам изготовления.`;
             const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
             
             // 4. Ссылка на сайт: базовый URL берём из mysettings.js и аккуратно клеим к нему ?item=...
