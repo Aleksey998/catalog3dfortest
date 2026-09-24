@@ -61,7 +61,12 @@
       align-items: center;
       margin-bottom: 16px;
     }
-    .nav-links { display: flex; gap: 10px; }
+    .nav-links { 
+     display: flex; 
+     gap: 8px; 
+     flex-wrap: wrap; 
+     align-items: center; 
+    }
     .nav-btn {
       background: var(--btn-nav-bg);
       color: var(--btn-nav-text);
@@ -789,6 +794,13 @@
       <div class="nav-links">
         <a href="delivery.html" class="nav-btn">Доставка</a>
         <a href="about.html" class="nav-btn">Обо мне</a>
+        <a href="#" target="_blank" class="nav-btn nav-btn-tg" id="channelLinkBtn">
+          <!-- Иконка бумажного самолётика Telegram -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:-2px; margin-right:4px;">
+            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.458c.538-.196 1.006.128.832.969z"/>
+          </svg>
+          Канал
+        </a>
       </div>
       <button class="theme-toggle-btn" id="themeToggleBtn" title="Переключить тему">🌙</button>
     </div>
@@ -947,6 +959,13 @@
     document.addEventListener('click', () => dropdownMenu.classList.remove('show'));
 
     async function initCatalog() {
+
+      // Подставляем ссылку на Telegram-канал из mysettings.js
+      const channelBtn = document.getElementById('channelLinkBtn');
+      if (channelBtn && window.MY_SETTINGS && window.MY_SETTINGS.channel_username) {
+        channelBtn.href = `https://t.me/${window.MY_SETTINGS.channel_username.replace('@', '')}`;
+      }
+
       // 1. Проверяем обычный GET-параметр из адресной строки (?item=...)
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.has('item')) {
