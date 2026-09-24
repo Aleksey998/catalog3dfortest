@@ -430,6 +430,17 @@
     const tgToken = (localStorage.getItem('tg_token') || '').trim();
     const tgChannel = window.MY_SETTINGS?.channel_username ? `@${window.MY_SETTINGS.channel_username.replace('@', '')}` : '';
 
+    if (!isTgReadyToSend) {
+      alert('Невозможно отправить: токен бота не подтверждён или не совпадает с настройками в mysettings.js!');
+      return;
+    }
+
+    const rawText = textInput.value.trim();
+    if (!rawText && postImages.length === 0) {
+      alert('Введите текст сообщения или прикрепите хотя бы одно фото!');
+      return;
+    }
+    
     if (!tgToken || !tgChannel) {
       alert('Заполните токен бота и канал в блоке авторизации выше!');
       return;
