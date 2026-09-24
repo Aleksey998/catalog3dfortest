@@ -176,9 +176,9 @@
 
   <!-- 2. Выбор и сортировка фото -->
   <div class="form-group" style="margin-bottom: 2px;">
-    <label style="margin-bottom: 4px;">Фотографии поста (до 6 шт., можно перетаскивать):</label>
+    <label style="margin-bottom: 4px;">Фотографии поста (до 6 штук):</label>
     <div class="images-sort-container" id="tgPostImagesContainer" style="margin-top: 0; margin-bottom: 0;">
-      <div id="tgPostNoImagesNotice" style="color:#71717a; font-size:13px; margin:auto;">Фотографии не выбраны (сообщение будет текстовым)</div>
+      <div id="tgPostNoImagesNotice" style="color:#71717a; font-size:13px; margin:auto;">Фотографии не выбраны</div>
     </div>
   </div>
 
@@ -190,14 +190,14 @@
 
   <!-- 3. Текст сообщения -->
   <div class="form-group" style="margin-bottom: 2px;">
-    <label style="margin-bottom: 4px;">Текст сообщения (поддерживаются отступы, Enter и форматирование *, **, _):</label>
-    <textarea id="tgPostTextInput" placeholder="Напишите текст новости, акции или поста...&#10;&#10;Можно делать отступы и списки." style="min-height: 130px; margin-bottom: 0;"></textarea>
+    <label style="margin-bottom: 4px;">Текст сообщения (* - ж, ** - к, _ - п):</label>
+    <textarea id="tgPostTextInput" placeholder="Напишите текст для поста." style="min-height: 130px; margin-bottom: 0;"></textarea>
   </div>
 
   <!-- 4. Инлайн-кнопки -->
   <div class="form-group" style="margin-bottom: 2px;">
     <div class="tgpost-buttons-header">
-      <label style="margin-bottom: 0;">Инлайн-кнопки под постом (<span id="tgPostButtonsCount">0</span> из 5):</label>
+      <label style="margin-bottom: 0;">Добавить кнопки под постом (<span id="tgPostButtonsCount">0</span> из 5):</label>
       <button type="button" class="tgpost-btn-add" id="tgPostAddBtn">➕ Добавить кнопку</button>
     </div>
     <div class="tgpost-buttons-list" id="tgPostButtonsList"></div>
