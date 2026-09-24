@@ -1717,7 +1717,10 @@
             const miniAppUrl = `https://t.me/${botUsername}/${miniAppName}?startapp=item_${updatedItem.id}`;
             
             const userPrice = String(updatedItem.price || '').trim();
-            const orderMsg = `Здравствуйте! Хочу сделать заказ: "${updatedItem.title}" по цене ${userPrice} ₽. Подскажите пожалуйста по срокам изготовления.`;
+            const orderTemplate = window.MY_SETTINGS.order_message_template;
+            const orderMsg = orderTemplate
+              .replace('{title}', updatedItem.title)
+              .replace('{price}', userPrice);
             const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
             
             const catalogBase = window.MY_SETTINGS.catalog_base_url;
