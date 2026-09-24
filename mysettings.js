@@ -24,6 +24,6 @@ window.MY_SETTINGS = {
   catalog_base_url: "https://aleksey998.github.io/catalog3dfortest",
 
   // Прямой базовый URL для сырых файлов (нужна для отправки фото товара в телеграмм при публикации новинки и обновления)
-  // Сюда потом вставить прямой адрес своего репозитория каталога
+  // Сюда потом вставить имя своего репозитория каталога
   github_raw_base_url: "https://raw.githubusercontent.com/aleksey998/catalog3dfortest/main"
 };

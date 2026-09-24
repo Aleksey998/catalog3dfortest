@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Админка — Pogodin_3d</title>
+  <script src="mysettings.js"></script>
   <link rel="icon" type="image/png" href="logo.png">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
@@ -1749,28 +1750,33 @@
         if (shouldPublishToTg) {
           showStatus('loading', '⏳ Публикация новинки в Telegram-канал...');
           try {
-            const firstImg = (finalImages && finalImages.length > 0) ? finalImages[0] : '';
-            const isRealPhoto = firstImg && !firstImg.includes('placeholder.com') && !firstImg.startsWith('data:') && firstImg !== 'nofoto.jpg';
+            // 1. Базовый адрес для фото берём из mysettings.js, а если его нет — собираем из полей ввода
+            const rawBase = window.MY_SETTINGS?.github_raw_base_url || `https://raw.githubusercontent.com/${owner}/${repo}/main`;
 
+            const firstImg = (updatedItem.images && updatedItem.images.length > 0) ? updatedItem.images[0] : '';
+            const isRealPhoto = firstImg && !firstImg.includes('nofoto.jpg');
             let photoUrl = '';
             if (isRealPhoto) {
               photoUrl = firstImg.startsWith('images/')
-                ? `https://raw.githubusercontent.com/${owner}/${repo}/main/${firstImg}`
+                ? `${rawBase}/${firstImg}`
                 : firstImg;
             } else {
-              photoUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/nofoto.jpg`;
+              photoUrl = `${rawBase}/nofoto.jpg`;
             }
 
-            const botUsername = verifiedBotUsername || 'pogodin_3d_bot';
-            const miniAppName = 'catalogp3d'; 
+            // 2. Имя бота и Mini App берём из mysettings.js с сохранением страховок
+            const botUsername = verifiedBotUsername || window.MY_SETTINGS?.bot_username || 'pogodin_3d_bot';
+            const miniAppName = window.MY_SETTINGS?.miniapp_name || 'catalogp3d';
             const miniAppUrl = `https://t.me/${botUsername}/${miniAppName}?startapp=item_${updatedItem.id}`;
             
+            // 3. Формирование ссылки заказа боту
             const userPrice = String(updatedItem.price || '').trim();
-            const orderMsg = `Здравствуйте! Хочу сделать заказ: "${updatedItem.title}" по цене ${userPrice} ₽. Подскажите пожалуйста по срокам изготовления.`;
+            const orderMsg = `Здравствуйте! Хочу сделать заказ в Pogodin_3d: "${updatedItem.title}" по цене ${userPrice} ₽. Подскажите пожалуйста по срокам изготовления.`;
             const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
             
-            const browserCatalogUrl = `https://${owner}.github.io/${repo}/index.html?item=${updatedItem.id}`;
-
+            // 4. Ссылка на сайт: базовый URL берём из mysettings.js и аккуратно клеим к нему ?item=...
+            const catalogBase = window.MY_SETTINGS?.catalog_base_url || `https://${owner}.github.io/${repo}`;
+            const browserCatalogUrl = `${catalogBase}/index.html?item=${updatedItem.id}`;
             const escapeHtml = (str) => String(str || '')
               .replace(/&/g, '&amp;')
               .replace(/</g, '&lt;')
