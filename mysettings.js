@@ -8,10 +8,10 @@ window.MY_SETTINGS = {
   github_repo: "catalog3dfortest",
 
   // Юзернейм Telegram-бота для заказов (кнопка "заказать в телеграмм")
-  bot_username: "pog",
+  bot_username: "pogodin_3d_bot",
 
   // Публичный Telegram-канал (используется в верхней шапке каталога)
-  channel_username: "pogod",
+  channel_username: "pogodin_3d",
 
   // Профиль Instagram для заказов (кнопка "заказать в инстаграмм")
   instagram_username: "Pogodin_3d",
