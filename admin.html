@@ -989,7 +989,7 @@
         `;
       } else if (isBotValid && !isMatch) {
         tgPublishTargetDesc.innerHTML = `
-          <span class="tg-target-warn">⚠️ Токен не совпадает с ботом ${expectedBot}</span>
+          <span class="tg-target-warn">⚠️ Бот по токену (@${data.result.username}) не совпадает с указанным (@${window.MY_SETTINGS?.bot_username})</span>
         `;
       } else if (tgTokenInput.value.trim()) {
         tgPublishTargetDesc.innerHTML = `<span class="tg-target-warn">⚠️ Ошибка подключения к боту</span>`;

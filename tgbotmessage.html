@@ -243,7 +243,7 @@
     }
 
     if (!expectedBot || !channelRaw) {
-      targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Бот или канал не заданы в mysettings.js</span>`;
+      targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Бот или TG канал не заданы в mysettings.js</span>`;
       return;
     }
 
@@ -261,7 +261,7 @@
       const actualBot = (data.result.username || '').toLowerCase();
 
       if (actualBot !== expectedBot) {
-        targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Бот @${data.result.username} не совпадает с @${window.MY_SETTINGS?.bot_username} из настроек</span>`;
+        targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Бот по токену (@${data.result.username}) не совпадает с указанным (@${window.MY_SETTINGS?.bot_username})</span>`;
         return;
       }
 
@@ -436,7 +436,7 @@
     }
 
     if (!tgToken || !tgChannel) {
-      alert('Заполните токен бота и канал в блоке авторизации выше!');
+      alert('Заполните токен бота в окне авторизации и TG канал в настройках mysettings.js!');
       return;
     }
 
