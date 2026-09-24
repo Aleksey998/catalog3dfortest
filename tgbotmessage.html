@@ -431,7 +431,7 @@
     const tgChannel = window.MY_SETTINGS?.channel_username ? `@${window.MY_SETTINGS.channel_username.replace('@', '')}` : '';
 
     if (!isTgReadyToSend) {
-      alert('Невозможно отправить: токен бота не подтверждён или не совпадает с настройками в mysettings.js!');
+      alert('Невозможно отправить: токен бота не подтверждён или не совпадает с именем бота в mysettings.js!');
       return;
     }
 
