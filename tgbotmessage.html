@@ -230,34 +230,17 @@
 
   async function checkTgStatus() {
     const tgToken = (localStorage.getItem('tg_token') || '').trim();
-    const tgChannel = (localStorage.getItem('tg_channel') || '').trim();
+    const tgChannel = window.MY_SETTINGS?.channel_username ? `@${window.MY_SETTINGS.channel_username.replace('@', '')}` : '';
 
     if (!tgToken || !tgChannel) {
-      targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Токен бота или канал не заполнены в окне авторизации выше</span>`;
+      targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Токен бота не сохранен или канал не указан в mysettings.js</span>`;
       return;
     }
 
-    let botUsername = window.verifiedBotUsername || '';
-
-    if (!botUsername) {
-      try {
-        const res = await fetch(`https://api.telegram.org/bot${tgToken}/getMe`);
-        const data = await res.json();
-        if (data.ok && data.result) {
-          botUsername = data.result.username;
-          window.verifiedBotUsername = botUsername;
-        }
-      } catch (e) {
-        console.warn('Не удалось запросить getMe бота:', e);
-      }
-    }
-
-    const botBadge = botUsername 
-      ? `<span class="tgpost-badge-item">@${botUsername}</span>` 
-      : `<span class="tgpost-badge-item">Бот авторизован</span>`;
+    const botUsername = window.MY_SETTINGS?.bot_username ? `@${window.MY_SETTINGS.bot_username.replace('@', '')}` : 'Бот авторизован';
 
     targetDesc.innerHTML = `
-      ${botBadge}
+      <span class="tgpost-badge-item">${botUsername}</span>
       <span style="color:#9ca3af;">➔</span>
       <span class="tgpost-badge-item">${tgChannel}</span>
     `;
@@ -414,7 +397,7 @@
 
   submitBtn.addEventListener('click', async () => {
     const tgToken = (localStorage.getItem('tg_token') || '').trim();
-    const tgChannel = (localStorage.getItem('tg_channel') || '').trim();
+    const tgChannel = window.MY_SETTINGS?.channel_username ? `@${window.MY_SETTINGS.channel_username.replace('@', '')}` : '';
 
     if (!tgToken || !tgChannel) {
       alert('Заполните токен бота и канал в блоке авторизации выше!');
