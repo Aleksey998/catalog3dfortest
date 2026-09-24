@@ -4,20 +4,20 @@
 
 window.MY_SETTINGS = {
   // Привязка GitHub (для работы базы данных и загрузки картинок)
-  github_owner: "aleksey998",
-  github_repo: "catalog3dfortest",
+  github_owner: "1",
+  github_repo: "2",
 
   // Юзернейм Telegram-бота для заказов (кнопка "заказать в телеграмм")
-  bot_username: "pogodin_3d_bot",
+  bot_username: "3",
 
   // Публичный Telegram-канал (используется в верхней шапке каталога)
-  channel_username: "pogodin_3d",
+  channel_username: "4",
 
   // Профиль Instagram для заказов (кнопка "заказать в инстаграмм")
-  instagram_username: "Pogodin_3d",
+  instagram_username: "5",
 
   // Короткое имя Mini App из BotFather (для ссылок в мессенджере)
-  miniapp_name: "catalogp3d",
+  miniapp_name: "6",
 
   // ----------------------------------------------------
   // ССЫЛКИ НА КАТАЛОГ И РЕСУРСЫ
