@@ -1750,8 +1750,8 @@
         if (shouldPublishToTg) {
           showStatus('loading', '⏳ Публикация новинки в Telegram-канал...');
           try {
-            // 1. Базовый адрес для фото берём из mysettings.js, а если его нет — собираем из полей ввода
-            const rawBase = window.MY_SETTINGS?.github_raw_base_url || `https://raw.githubusercontent.com/${owner}/${repo}/main`;
+            // Базовый путь для картинок строго из mysettings.js
+            const rawBase = window.MY_SETTINGS.github_raw_base_url;
 
             const firstImg = (updatedItem.images && updatedItem.images.length > 0) ? updatedItem.images[0] : '';
             const isRealPhoto = firstImg && !firstImg.includes('nofoto.jpg');
@@ -1764,18 +1764,18 @@
               photoUrl = `${rawBase}/nofoto.jpg`;
             }
 
-            // 2. Имя бота и Mini App берём из mysettings.js с сохранением страховок
-            const botUsername = verifiedBotUsername || window.MY_SETTINGS?.bot_username || 'pogodin_3d_bot';
-            const miniAppName = window.MY_SETTINGS?.miniapp_name || 'catalogp3d';
+            // Бот и Mini App строго из mysettings.js
+            const botUsername = window.MY_SETTINGS.bot_username;
+            const miniAppName = window.MY_SETTINGS.miniapp_name;
             const miniAppUrl = `https://t.me/${botUsername}/${miniAppName}?startapp=item_${updatedItem.id}`;
             
-            // 3. Формирование ссылки заказа боту
+            // Формирование ссылки заказа боту
             const userPrice = String(updatedItem.price || '').trim();
             const orderMsg = `Здравствуйте! Хочу сделать заказ: "${updatedItem.title}" по цене ${userPrice} ₽. Подскажите пожалуйста по срокам изготовления.`;
             const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
             
-            // 4. Ссылка на сайт: базовый URL берём из mysettings.js и аккуратно клеим к нему ?item=...
-            const catalogBase = window.MY_SETTINGS?.catalog_base_url || `https://${owner}.github.io/${repo}`;
+            // Ссылка на сайт строго из mysettings.js
+            const catalogBase = window.MY_SETTINGS.catalog_base_url;
             const browserCatalogUrl = `${catalogBase}/index.html?item=${updatedItem.id}`;
             const escapeHtml = (str) => String(str || '')
               .replace(/&/g, '&amp;')

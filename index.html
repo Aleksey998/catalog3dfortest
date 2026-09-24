@@ -963,7 +963,15 @@
       // Подставляем ссылку на Telegram-канал из mysettings.js
       const channelBtn = document.getElementById('channelLinkBtn');
       if (channelBtn && window.MY_SETTINGS && window.MY_SETTINGS.channel_username) {
-        channelBtn.href = `https://t.me/${window.MY_SETTINGS.channel_username.replace('@', '')}`;
+        const channelUrl = `https://t.me/${window.MY_SETTINGS.channel_username.replace('@', '')}`;
+        channelBtn.href = channelUrl;
+
+        channelBtn.addEventListener('click', (e) => {
+          if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.openTelegramLink === 'function') {
+            e.preventDefault();
+            window.Telegram.WebApp.openTelegramLink(channelUrl);
+          }
+        });
       }
 
       // 1. Проверяем обычный GET-параметр из адресной строки (?item=...)
@@ -1138,7 +1146,7 @@
         modalThumbsHtml = `
           <div class="thumbnails">
             ${validImages.map((img, idx) => `
-              <img src="${img}" class="thumb-img ${idx === 0 ? 'active' : ''}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src=NO_PHOTO_PLACEHOLDER;" onclick="changeModalImage(this, ${item.id},${idx})">
+              <img src="${img}" class="thumb-img ${idx === 0 ? 'active' : ''}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='nofoto.jpg';" onclick="changeModalImage(this, ${item.id},${idx})">
             `).join('')}
           </div>
         `;
@@ -1147,7 +1155,7 @@
       const imgClickAttr = hasImages ? `onclick="openLightbox(${item.id})" title="Нажмите, чтобы увеличить"` : `style="cursor:default;"`;
 
       modalGallery.innerHTML = `
-        <img src="${firstImg}" alt="${item.title}" class="detail-modal-main-img" id="modal-main-img-${item.id}" data-active-index="0" decoding="async" onerror="this.onerror=null; this.src=NO_PHOTO_PLACEHOLDER;" ${imgClickAttr}>
+        <img src="${firstImg}" alt="${item.title}" class="detail-modal-main-img" id="modal-main-img-${item.id}" data-active-index="0" decoding="async" onerror="this.onerror=null; this.src='nofoto.jpg';" ${imgClickAttr}>
         ${modalThumbsHtml}
       `;
 
@@ -1304,7 +1312,7 @@
           thumbnailsHtml = `
             <div class="thumbnails">
               ${validImages.map((img, idx) => `
-                <img src="${img}" class="thumb-img ${idx === 0 ? 'active' : ''}" loading="lazy" decoding="async" data-main-target="main-img-${item.id}" data-idx="${idx}" onerror="this.onerror=null; this.src=NO_PHOTO_PLACEHOLDER;" onclick="changeImage(this, ${item.id},${idx})">
+                <img src="${img}" class="thumb-img ${idx === 0 ? 'active' : ''}" loading="lazy" decoding="async" data-main-target="main-img-${item.id}" data-idx="${idx}" onerror="this.onerror=null; this.src='nofoto.jpg';" onclick="changeImage(this, ${item.id},${idx})">
               `).join('')}
             </div>
           `;
@@ -1324,7 +1332,7 @@
             </svg>
           </button>
           <div class="card-gallery">
-            <img src="${firstImg}" alt="${item.title}" class="main-img" id="main-img-${item.id}" data-active-index="0" loading="${imgLoading}" decoding="async" onerror="this.onerror=null; this.src=NO_PHOTO_PLACEHOLDER;" ${imgClickAttr}>
+            <img src="${firstImg}" alt="${item.title}" class="main-img" id="main-img-${item.id}" data-active-index="0" loading="${imgLoading}" decoding="async" onerror="this.onerror=null; this.src='nofoto.jpg';" ${imgClickAttr}>
             ${thumbnailsHtml}
           </div>
           <div class="card-content">
