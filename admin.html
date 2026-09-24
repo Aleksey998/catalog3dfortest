@@ -981,20 +981,29 @@
 
     function updateTelegramTargetLabel(isBotValid, isMatch, channelRaw) {
       const expectedBot = window.MY_SETTINGS?.bot_username ? `@${window.MY_SETTINGS.bot_username.replace('@', '')}` : '';
+      const tokenVal = tgTokenInput.value.trim();
+
+      // 1. Токен вообще не введён
+      if (!tokenVal) {
+        tgPublishTargetDesc.innerHTML = `<span class="tg-target-warn">⚠️ Токен бота не заполнен в окне авторизации выше</span>`;
+        return;
+      }
+
+      // 2. Всё успешно совпало и бот на связи
       if (isBotValid && isMatch) {
         tgPublishTargetDesc.innerHTML = `
           <span class="tg-target-badge">${expectedBot}</span>
           <span>➔</span>
           <span class="tg-target-badge">${channelRaw}</span>
         `;
+      // 3. Бот ответил, но его ник не совпадает с настройками
       } else if (isBotValid && !isMatch) {
         tgPublishTargetDesc.innerHTML = `
-          <span class="tg-target-warn">⚠️ Бот по токену (@${data.result.username}) не совпадает с указанным (@${window.MY_SETTINGS?.bot_username})</span>
+          <span class="tg-target-warn">⚠️ Токен не совпадает с ботом ${expectedBot}</span>
         `;
-      } else if (tgTokenInput.value.trim()) {
-        tgPublishTargetDesc.innerHTML = `<span class="tg-target-warn">⚠️ Ошибка подключения к боту</span>`;
+      // 4. Ошибка токена или нет сети
       } else {
-        tgPublishTargetDesc.innerHTML = `<span style="color:#71717a; font-size:11px;">(токен бота не задан)</span>`;
+        tgPublishTargetDesc.innerHTML = `<span class="tg-target-warn">⚠️ Неверный токен бота или нет связи</span>`;
       }
     }
 
