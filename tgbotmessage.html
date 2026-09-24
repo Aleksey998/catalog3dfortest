@@ -228,22 +228,53 @@
   let postButtons = []; 
   let draggedImgIdx = null;
 
+  let isTgReadyToSend = false;
+
   async function checkTgStatus() {
     const tgToken = (localStorage.getItem('tg_token') || '').trim();
-    const tgChannel = window.MY_SETTINGS?.channel_username ? `@${window.MY_SETTINGS.channel_username.replace('@', '')}` : '';
+    const expectedBot = (window.MY_SETTINGS?.bot_username || '').replace('@', '').trim().toLowerCase();
+    const channelRaw = window.MY_SETTINGS?.channel_username ? `@${window.MY_SETTINGS.channel_username.replace('@', '')}` : '';
 
-    if (!tgToken || !tgChannel) {
-      targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Токен бота не сохранен или канал не указан в mysettings.js</span>`;
+    isTgReadyToSend = false;
+
+    if (!tgToken) {
+      targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Токен бота не заполнен в окне авторизации выше</span>`;
       return;
     }
 
-    const botUsername = window.MY_SETTINGS?.bot_username ? `@${window.MY_SETTINGS.bot_username.replace('@', '')}` : 'Бот авторизован';
+    if (!expectedBot || !channelRaw) {
+      targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Бот или канал не заданы в mysettings.js</span>`;
+      return;
+    }
 
-    targetDesc.innerHTML = `
-      <span class="tgpost-badge-item">${botUsername}</span>
-      <span style="color:#9ca3af;">➔</span>
-      <span class="tgpost-badge-item">${tgChannel}</span>
-    `;
+    targetDesc.innerHTML = `<span style="color:#60a5fa; font-size:12px;">⏳ Проверка связи с ботом...</span>`;
+
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${tgToken}/getMe`);
+      const data = await res.json();
+
+      if (!data.ok || !data.result) {
+        targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Неверный токен Telegram-бота</span>`;
+        return;
+      }
+
+      const actualBot = (data.result.username || '').toLowerCase();
+
+      if (actualBot !== expectedBot) {
+        targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Бот @${data.result.username} не совпадает с @${window.MY_SETTINGS?.bot_username} из настроек</span>`;
+        return;
+      }
+
+      // Все проверки пройдены идеально
+      isTgReadyToSend = true;
+      targetDesc.innerHTML = `
+        <span class="tgpost-badge-item">@${data.result.username}</span>
+        <span style="color:#9ca3af;">➔</span>
+        <span class="tgpost-badge-item">${channelRaw}</span>
+      `;
+    } catch (e) {
+      targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Ошибка связи с Telegram API (проверьте интернет)</span>`;
+    }
   }
 
   checkTgStatus();
