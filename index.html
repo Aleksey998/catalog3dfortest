@@ -1044,7 +1044,7 @@
       dropdownMenu.innerHTML = '';
       for (const [id, name] of Object.entries(categories)) {
         let count = 0;
-        if (id === 'all' || id === 'new') {
+        if (id === 'all') {
           count = products.length;
         } else {
           count = products.filter(p => p.category === id).length;
@@ -1265,7 +1265,7 @@
       } else if (query) {
         filtered = products.filter(p => p.title.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query));
         categoryTitle.textContent = `Результаты поиска (${filtered.length})`;
-      } else if (currentCategory === 'all' || currentCategory === 'new') {
+      } else if (currentCategory === 'all') {
         filtered = [...products];
         categoryTitle.textContent = `Все товары (${filtered.length})`;
       } else {

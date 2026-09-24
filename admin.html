@@ -111,6 +111,27 @@
       font-size: 11px;
     }
 
+    /* Справочные информационные плашки под полями ввода */
+    .field-hint-box {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      line-height: 1.3;
+    }
+    .hint-badge {
+      color: #4ade80;
+      font-weight: 700;
+      background: rgba(74, 222, 128, 0.12);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
     input[type="text"], input[type="password"], textarea, select {
       width: 100%; padding: 10px 12px; background: #141414; border: 1px solid #3f3f46;
       border-radius: 6px; color: #fff; font-size: 14px; outline: none;
@@ -477,48 +498,37 @@
       </div>
 
       <div id="authContent">
+        <!-- БЛОК GITHUB -->
         <div class="form-group">
           <label>Personal Access Token GitHub (classic, права repo):</label>
           <div class="input-wrapper">
             <input type="text" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
             <span class="input-status-icon" id="status_ghToken" title=""></span>
           </div>
-        </div>
-        <div class="row">
-          <div class="col form-group">
-            <label>Логин GitHub (Owner):</label>
-            <div class="input-wrapper">
-              <input type="text" id="ghOwner" placeholder="Твой ник на GitHub">
-              <span class="input-status-icon" id="status_ghOwner" title=""></span>
-            </div>
-          </div>
-          <div class="col form-group">
-            <label>Имя репозитория (Repo):</label>
-            <div class="input-wrapper">
-              <input type="text" id="ghRepo" placeholder="Название репозитория">
-              <span class="input-status-icon" id="status_ghRepo" title=""></span>
-            </div>
+          <div class="field-hint-box" id="ghHintBox">
+            <span>Репозиторий проекта:</span>
+            <span class="hint-badge" id="hintGhOwner">...</span>
+            <span>/</span>
+            <span class="hint-badge" id="hintGhRepo">...</span>
           </div>
         </div>
 
-        <div class="row" style="margin-top: 6px; padding-top: 12px; border-top: 1px dashed #2a2a2a;">
-          <div class="col form-group">
-            <label>Токен Telegram-бота (из BotFather):</label>
-            <div class="input-wrapper">
-              <input type="text" id="tgToken" placeholder="123ххххххххххххххххххххххххх">
-              <span class="input-status-icon" id="status_tgToken" title=""></span>
-            </div>
+        <!-- БЛОК TELEGRAM -->
+        <div class="form-group" style="margin-top: 14px; padding-top: 14px; border-top: 1px dashed #2a2a2a;">
+          <label>Токен Telegram-бота (из BotFather):</label>
+          <div class="input-wrapper">
+            <input type="text" id="tgToken" placeholder="123ххххххххххххххххххххххххх">
+            <span class="input-status-icon" id="status_tgToken" title=""></span>
           </div>
-          <div class="col form-group">
-            <label>Публичный канал (юзернейм или ID):</label>
-            <div class="input-wrapper">
-              <input type="text" id="tgChannel" placeholder="@хххххххх">
-              <span class="input-status-icon" id="status_tgChannel" title=""></span>
-            </div>
+          <div class="field-hint-box" id="tgHintBox">
+            <span>Бот:</span>
+            <span class="hint-badge" id="hintTgBot">...</span>
+            <span style="margin-left: 6px;">➔ Канал:</span>
+            <span class="hint-badge" id="hintTgChannel">...</span>
           </div>
         </div>
 
-        <button class="btn btn-green" id="btnConnect" style="background:#2563eb; width:100%; margin-top: 6px;">Проверка и сохранение</button>
+        <button class="btn btn-green" id="btnConnect" style="background:#2563eb; width:100%; margin-top: 8px;">Проверка и сохранение</button>
       </div>
     </div>
 
@@ -642,11 +652,14 @@
 
   <script>
     const tokenInput = document.getElementById('ghToken');
-    const ownerInput = document.getElementById('ghOwner');
-    const repoInput = document.getElementById('ghRepo');
     const tgTokenInput = document.getElementById('tgToken');
-    const tgChannelInput = document.getElementById('tgChannel');
     const btnConnect = document.getElementById('btnConnect');
+
+    // Справочные элементы в окне авторизации
+    const hintGhOwner = document.getElementById('hintGhOwner');
+    const hintGhRepo = document.getElementById('hintGhRepo');
+    const hintTgBot = document.getElementById('hintTgBot');
+    const hintTgChannel = document.getElementById('hintTgChannel');
 
     // Окно авторизации
     const authContent = document.getElementById('authContent');
@@ -708,15 +721,19 @@
     let formImages = [];
     let imagesToDeleteFromGithub = [];
 
-    let verifiedBotUsername = '';
-    let verifiedChannelTitle = '';
-
-    // Загрузка сохраненных данных авторизации
+    // Загрузка сохраненных токенов из памяти браузера
     tokenInput.value = localStorage.getItem('gh_token') || '';
-    ownerInput.value = localStorage.getItem('gh_owner') || '';
-    repoInput.value = localStorage.getItem('gh_repo') || '';
     tgTokenInput.value = localStorage.getItem('tg_token') || '';
-    tgChannelInput.value = localStorage.getItem('tg_channel') || '';
+
+    // Инициализация справочных данных из mysettings.js
+    function initHintsFromSettings() {
+      if (!window.MY_SETTINGS) return;
+      hintGhOwner.textContent = window.MY_SETTINGS.github_owner || '(не указан)';
+      hintGhRepo.textContent = window.MY_SETTINGS.github_repo || '(не указан)';
+      hintTgBot.textContent = window.MY_SETTINGS.bot_username ? `@${window.MY_SETTINGS.bot_username.replace('@', '')}` : '(не указан)';
+      hintTgChannel.textContent = window.MY_SETTINGS.channel_username ? `@${window.MY_SETTINGS.channel_username.replace('@', '')}` : '(не указан)';
+    }
+    initHintsFromSettings();
 
     // 1. Управление сворачиванием: Окно авторизации
     function setAuthCollapsed(isCollapsed) {
@@ -808,11 +825,11 @@
       setCatCollapsed(false);
     }
 
-    // Загрузка файла tgbotmessage.html из репозитория с принудительным запуском скриптов
+    // Загрузка файла tgbotmessage.html из репозитория с запуском скриптов
     async function loadTgBotMessageFile() {
       const token = tokenInput.value.trim();
-      const owner = ownerInput.value.trim();
-      const repo = repoInput.value.trim();
+      const owner = window.MY_SETTINGS.github_owner;
+      const repo = window.MY_SETTINGS.github_repo;
 
       if (!token || !owner || !repo) return;
 
@@ -825,10 +842,8 @@
           const data = await res.json();
           const htmlContent = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
           
-          // 1. Вставляем HTML-разметку и стили
           tgBotMessageContainer.innerHTML = htmlContent;
 
-          // 2. ОЖИВЛЯЕМ СКРИПТЫ: находим все <script> и перезапускаем их
           const scripts = tgBotMessageContainer.querySelectorAll('script');
           scripts.forEach(oldScript => {
             const newScript = document.createElement('script');
@@ -871,222 +886,157 @@
       }
     }
 
-    // Комплексная проверка авторизаций (GitHub + Telegram)
-    async function verifyAllCredentials() {
+    // Проверка соответствия токена GitHub аккаунту и репозиторию из mysettings.js
+    async function verifyGithubCredentials() {
       const ghToken = tokenInput.value.trim();
-      const ghOwner = ownerInput.value.trim();
-      const ghRepo = repoInput.value.trim();
-      const tgToken = tgTokenInput.value.trim();
-      const tgChannel = tgChannelInput.value.trim();
+      const expectedOwner = (window.MY_SETTINGS?.github_owner || '').trim().toLowerCase();
+      const expectedRepo = (window.MY_SETTINGS?.github_repo || '').trim();
 
-      // 1. Проверка GitHub Token
-      if (ghToken) {
-        setFieldStatus('ghToken', 'checking', 'Проверка токена GitHub...');
-        try {
-          const userRes = await fetch('https://api.github.com/user', {
-            headers: { 'Authorization': `Bearer ${ghToken}` }
-          });
-          if (userRes.ok) {
-            setFieldStatus('ghToken', 'valid', 'Токен GitHub действителен!');
-          } else {
-            setFieldStatus('ghToken', 'invalid', 'Неверный токен GitHub (401 Unauthorized)');
-          }
-        } catch {
-          setFieldStatus('ghToken', 'invalid', 'Ошибка сети при проверке GitHub токена');
-        }
-      } else {
+      if (!ghToken) {
         setFieldStatus('ghToken', 'none');
+        return false;
       }
 
-      // 2. Проверка GitHub Репозитория и Owner
-      if (ghToken && ghOwner && ghRepo) {
-        setFieldStatus('ghOwner', 'checking', 'Проверка доступа...');
-        setFieldStatus('ghRepo', 'checking', 'Проверка доступа...');
-        try {
-          const repoRes = await fetch(`https://api.github.com/repos/${ghOwner}/${ghRepo}`, {
-            headers: { 'Authorization': `Bearer ${ghToken}` }
-          });
-          if (repoRes.ok) {
-            setFieldStatus('ghOwner', 'valid', `Владелец ${ghOwner} подтвержден`);
-            setFieldStatus('ghRepo', 'valid', `Репозиторий ${ghRepo} доступен с правом записи`);
-          } else {
-            setFieldStatus('ghOwner', 'invalid', 'Репозиторий или логин не найден');
-            setFieldStatus('ghRepo', 'invalid', 'Репозиторий или логин не найден');
-          }
-        } catch {
-          setFieldStatus('ghOwner', 'invalid', 'Ошибка сети');
-          setFieldStatus('ghRepo', 'invalid', 'Ошибка сети');
+      setFieldStatus('ghToken', 'checking', 'Проверка токена и прав доступа...');
+
+      try {
+        const userRes = await fetch('https://api.github.com/user', {
+          headers: { 'Authorization': `Bearer ${ghToken}` }
+        });
+
+        if (!userRes.ok) {
+          setFieldStatus('ghToken', 'invalid', 'Неверный токен GitHub (401 Unauthorized)');
+          return false;
         }
-      } else {
-        if (!ghOwner) setFieldStatus('ghOwner', 'none');
-        if (!ghRepo) setFieldStatus('ghRepo', 'none');
-      }
 
-      // 3. Проверка Telegram-бота через getMe
-      let isBotValid = false;
-      verifiedBotUsername = '';
-      if (tgToken) {
-        setFieldStatus('tgToken', 'checking', 'Проверка бота...');
-        try {
-          const meRes = await fetch(`https://api.telegram.org/bot${tgToken}/getMe`);
-          const meData = await meRes.json();
-          if (meData.ok && meData.result) {
-            isBotValid = true;
-            verifiedBotUsername = meData.result.username;
-            setFieldStatus('tgToken', 'valid', `Бот @${verifiedBotUsername} авторизован`);
-          } else {
-            setFieldStatus('tgToken', 'invalid', 'Неверный токен Telegram-бота');
-          }
-        } catch {
-          setFieldStatus('tgToken', 'invalid', 'Ошибка соединения с Telegram API');
+        const userData = await userRes.json();
+        const actualLogin = (userData.login || '').toLowerCase();
+
+        if (actualLogin !== expectedOwner) {
+          setFieldStatus('ghToken', 'invalid', `Токен принадлежит пользователю @${userData.login}, а в настройках указан @${window.MY_SETTINGS?.github_owner}`);
+          return false;
         }
-      } else {
-        setFieldStatus('tgToken', 'none');
-      }
 
-      // 4. Проверка Telegram-канала через getChat
-      let isChannelValid = false;
-      verifiedChannelTitle = '';
-      if (tgToken && isBotValid && tgChannel) {
-        setFieldStatus('tgChannel', 'checking', 'Проверка канала...');
-        try {
-          const chatRes = await fetch(`https://api.telegram.org/bot${tgToken}/getChat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: tgChannel })
-          });
-          const chatData = await chatRes.json();
-          if (chatData.ok && chatData.result) {
-            isChannelValid = true;
-            verifiedChannelTitle = chatData.result.title || tgChannel;
-            setFieldStatus('tgChannel', 'valid', `Канал: "${verifiedChannelTitle}" найден`);
-          } else {
-            setFieldStatus('tgChannel', 'invalid', 'Канал не найден или бот не добавлен админом');
-          }
-        } catch {
-          setFieldStatus('tgChannel', 'invalid', 'Ошибка связи с каналом');
+        // Проверяем доступ к конкретному репозиторию
+        const repoRes = await fetch(`https://api.github.com/repos/${window.MY_SETTINGS.github_owner}/${expectedRepo}`, {
+          headers: { 'Authorization': `Bearer ${ghToken}` }
+        });
+
+        if (repoRes.ok) {
+          setFieldStatus('ghToken', 'valid', `Токен подтвержден для аккаунта @${userData.login} и репозитория ${expectedRepo}`);
+          return true;
+        } else {
+          setFieldStatus('ghToken', 'invalid', `Репозиторий ${expectedRepo} не найден или нет прав на запись`);
+          return false;
         }
-      } else {
-        if (!tgChannel) setFieldStatus('tgChannel', 'none');
+      } catch {
+        setFieldStatus('ghToken', 'invalid', 'Ошибка соединения с GitHub API');
+        return false;
       }
-
-      updateTelegramTargetLabel(isBotValid, isChannelValid, tgChannel);
     }
 
-    // Отдельная автоматическая проверка только данных Telegram
-    let tgCheckDebounceTimer = null;
-    async function checkTelegramOnly() {
+    // Проверка Telegram-бота: совпадение с bot_username из mysettings.js и статус онлайн
+    async function verifyTelegramCredentials() {
       const tgToken = tgTokenInput.value.trim();
-      const tgChannel = tgChannelInput.value.trim();
+      const expectedBot = (window.MY_SETTINGS?.bot_username || '').replace('@', '').trim().toLowerCase();
+      const channelRaw = window.MY_SETTINGS?.channel_username ? `@${window.MY_SETTINGS.channel_username.replace('@', '')}` : '';
 
       localStorage.setItem('tg_token', tgToken);
-      localStorage.setItem('tg_channel', tgChannel);
 
-      let isBotValid = false;
-      verifiedBotUsername = '';
-
-      if (tgToken) {
-        setFieldStatus('tgToken', 'checking', 'Проверка бота...');
-        try {
-          const meRes = await fetch(`https://api.telegram.org/bot${tgToken}/getMe`);
-          const meData = await meRes.json();
-          if (meData.ok && meData.result) {
-            isBotValid = true;
-            verifiedBotUsername = meData.result.username;
-            setFieldStatus('tgToken', 'valid', `Бот @${verifiedBotUsername} авторизован`);
-          } else {
-            setFieldStatus('tgToken', 'invalid', 'Неверный токен Telegram-бота');
-          }
-        } catch {
-          setFieldStatus('tgToken', 'invalid', 'Ошибка соединения с Telegram API');
-        }
-      } else {
+      if (!tgToken) {
         setFieldStatus('tgToken', 'none');
+        updateTelegramTargetLabel(false, false, '');
+        return false;
       }
 
-      let isChannelValid = false;
-      verifiedChannelTitle = '';
-      if (tgToken && isBotValid && tgChannel) {
-        setFieldStatus('tgChannel', 'checking', 'Проверка канала...');
-        try {
-          const chatRes = await fetch(`https://api.telegram.org/bot${tgToken}/getChat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: tgChannel })
-          });
-          const chatData = await chatRes.json();
-          if (chatData.ok && chatData.result) {
-            isChannelValid = true;
-            verifiedChannelTitle = chatData.result.title || tgChannel;
-            setFieldStatus('tgChannel', 'valid', `Канал: "${verifiedChannelTitle}" найден`);
+      setFieldStatus('tgToken', 'checking', 'Связь с ботом...');
+
+      try {
+        const meRes = await fetch(`https://api.telegram.org/bot${tgToken}/getMe`);
+        const meData = await meRes.json();
+
+        if (meData.ok && meData.result) {
+          const actualBot = (meData.result.username || '').toLowerCase();
+          
+          if (actualBot === expectedBot) {
+            setFieldStatus('tgToken', 'valid', `Бот @${meData.result.username} на связи и соответствует mysettings.js`);
+            updateTelegramTargetLabel(true, true, channelRaw);
+            return true;
           } else {
-            setFieldStatus('tgChannel', 'invalid', 'Канал не найден или бот не добавлен администратором');
+            setFieldStatus('tgToken', 'invalid', `Токен принадлежит боту @${meData.result.username}, а в mysettings.js указан @${window.MY_SETTINGS?.bot_username}`);
+            updateTelegramTargetLabel(true, false, channelRaw);
+            return false;
           }
-        } catch {
-          setFieldStatus('tgChannel', 'invalid', 'Ошибка связи с каналом');
+        } else {
+          setFieldStatus('tgToken', 'invalid', 'Неверный токен Telegram-бота');
+          updateTelegramTargetLabel(false, false, channelRaw);
+          return false;
         }
-      } else {
-        if (!tgChannel) setFieldStatus('tgChannel', 'none');
+      } catch {
+        setFieldStatus('tgToken', 'invalid', 'Ошибка связи с Telegram API (нет сети)');
+        updateTelegramTargetLabel(false, false, channelRaw);
+        return false;
       }
-
-      updateTelegramTargetLabel(isBotValid, isChannelValid, tgChannel);
     }
 
-    [tgTokenInput, tgChannelInput].forEach(inp => {
-      inp.addEventListener('input', () => {
-        clearTimeout(tgCheckDebounceTimer);
-        tgCheckDebounceTimer = setTimeout(checkTelegramOnly, 500);
-      });
-      inp.addEventListener('change', checkTelegramOnly);
-    });
-
-    function updateTelegramTargetLabel(isBotValid, isChannelValid, channelRaw) {
-      if (isBotValid && isChannelValid) {
+    function updateTelegramTargetLabel(isBotValid, isMatch, channelRaw) {
+      const expectedBot = window.MY_SETTINGS?.bot_username ? `@${window.MY_SETTINGS.bot_username.replace('@', '')}` : '';
+      if (isBotValid && isMatch) {
         tgPublishTargetDesc.innerHTML = `
-          <span class="tg-target-badge">@${verifiedBotUsername}</span>
+          <span class="tg-target-badge">${expectedBot}</span>
           <span>➔</span>
           <span class="tg-target-badge">${channelRaw}</span>
         `;
-      } else if (isBotValid && !isChannelValid && channelRaw) {
+      } else if (isBotValid && !isMatch) {
         tgPublishTargetDesc.innerHTML = `
-          <span class="tg-target-warn">⚠️ Бот @${verifiedBotUsername} не подключен к каналу ${channelRaw}</span>
+          <span class="tg-target-warn">⚠️ Токен не совпадает с ботом ${expectedBot}</span>
         `;
-      } else if (!isBotValid && tgTokenInput.value.trim()) {
-        tgPublishTargetDesc.innerHTML = `<span class="tg-target-warn">⚠️ Неверный токен бота</span>`;
+      } else if (tgTokenInput.value.trim()) {
+        tgPublishTargetDesc.innerHTML = `<span class="tg-target-warn">⚠️ Ошибка подключения к боту</span>`;
       } else {
-        tgPublishTargetDesc.innerHTML = `<span style="color:#71717a; font-size:11px;">(настройки Telegram не заданы)</span>`;
+        tgPublishTargetDesc.innerHTML = `<span style="color:#71717a; font-size:11px;">(токен бота не задан)</span>`;
       }
     }
 
+    // Автопроверка Telegram при вводе токена
+    let tgCheckDebounceTimer = null;
+    tgTokenInput.addEventListener('input', () => {
+      clearTimeout(tgCheckDebounceTimer);
+      tgCheckDebounceTimer = setTimeout(verifyTelegramCredentials, 500);
+    });
+    tgTokenInput.addEventListener('change', verifyTelegramCredentials);
+
     // 1. АВТОПРОГРУЗКА ПРИ СТАРТЕ ИЛИ F5
     const savedGhToken = localStorage.getItem('gh_token') || '';
-    const savedGhOwner = localStorage.getItem('gh_owner') || '';
-    const savedGhRepo = localStorage.getItem('gh_repo') || '';
-
     if (tgTokenInput.value.trim()) {
-      checkTelegramOnly();
+      verifyTelegramCredentials();
     }
 
-    if (savedGhToken.trim() && savedGhOwner.trim() && savedGhRepo.trim()) {
-      loadAllData();
+    if (savedGhToken.trim()) {
+      verifyGithubCredentials().then(isValid => {
+        if (isValid) loadAllData();
+      });
     }
 
     // 2. РУЧНАЯ ПРОВЕРКА И СОХРАНЕНИЕ
     btnConnect.addEventListener('click', async () => {
-      localStorage.setItem('gh_token', tokenInput.value.trim());
-      localStorage.setItem('gh_owner', ownerInput.value.trim());
-      localStorage.setItem('gh_repo', repoInput.value.trim());
-      localStorage.setItem('tg_token', tgTokenInput.value.trim());
-      localStorage.setItem('tg_channel', tgChannelInput.value.trim());
+      const ghTokenVal = tokenInput.value.trim();
+      const tgTokenVal = tgTokenInput.value.trim();
 
-      await verifyAllCredentials();
+      localStorage.setItem('gh_token', ghTokenVal);
+      localStorage.setItem('tg_token', tgTokenVal);
 
-      if (tokenInput.value.trim() && ownerInput.value.trim() && repoInput.value.trim()) {
+      const isGhValid = await verifyGithubCredentials();
+      await verifyTelegramCredentials();
+
+      if (isGhValid) {
         tgBotMessageBox.style.display = 'block';
         catBox.style.display = 'block';
         editorBox.style.display = 'block';
         listBox.style.display = 'block';
         loadAllData();
+      } else {
+        alert('❌ Токен GitHub не прошёл проверку! Убедитесь, что токен принадлежит аккаунту и репозиторию из mysettings.js.');
       }
     });
 
@@ -1237,8 +1187,8 @@
     async function deleteImageFromGithub(filePath) {
       if (!filePath.startsWith('images/')) return;
       const token = tokenInput.value.trim();
-      const owner = ownerInput.value.trim();
-      const repo = repoInput.value.trim();
+      const owner = window.MY_SETTINGS.github_owner;
+      const repo = window.MY_SETTINGS.github_repo;
 
       try {
         const getFileRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`, {
@@ -1262,8 +1212,8 @@
 
     async function loadAllData() {
       const token = tokenInput.value.trim();
-      const owner = ownerInput.value.trim();
-      const repo = repoInput.value.trim();
+      const owner = window.MY_SETTINGS.github_owner;
+      const repo = window.MY_SETTINGS.github_repo;
 
       if (!token || !owner || !repo) return;
 
@@ -1275,7 +1225,6 @@
       showStatus('loading', '⏳ Загрузка данных...');
 
       try {
-        // Подгружаем содержимое tgbotmessage.html
         loadTgBotMessageFile();
 
         const catRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/categories.json?t=${Date.now()}`, {
@@ -1326,7 +1275,7 @@
         listBox.style.display = 'none';
 
         console.error('Ошибка загрузки с GitHub:', err);
-        alert(`❌ Ошибка доступа к GitHub: ${err.message}\nПроверьте токен, логин и имя репозитория.`);
+        alert(`❌ Ошибка доступа к GitHub: ${err.message}\nПроверьте токен и данные в mysettings.js.`);
       }
     }
 
@@ -1438,8 +1387,8 @@
 
     async function saveCategoriesToGithub(message) {
       const token = tokenInput.value.trim();
-      const owner = ownerInput.value.trim();
-      const repo = repoInput.value.trim();
+      const owner = window.MY_SETTINGS.github_owner;
+      const repo = window.MY_SETTINGS.github_repo;
 
       const freshRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/categories.json?ref=main&t=${Date.now()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -1598,11 +1547,11 @@
     productForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const token = tokenInput.value.trim();
-      const owner = ownerInput.value.trim();
-      const repo = repoInput.value.trim();
+      const owner = window.MY_SETTINGS.github_owner;
+      const repo = window.MY_SETTINGS.github_repo;
 
       const tgToken = tgTokenInput.value.trim();
-      const tgChannel = tgChannelInput.value.trim();
+      const tgChannel = window.MY_SETTINGS.channel_username ? `@${window.MY_SETTINGS.channel_username.replace('@', '')}` : '';
       const shouldPublishToTg = tgPublishCheck.checked && tgToken && tgChannel;
 
       submitBtn.disabled = true;
@@ -1750,7 +1699,6 @@
         if (shouldPublishToTg) {
           showStatus('loading', '⏳ Публикация новинки в Telegram-канал...');
           try {
-            // Базовый путь для картинок строго из mysettings.js
             const rawBase = window.MY_SETTINGS.github_raw_base_url;
 
             const firstImg = (updatedItem.images && updatedItem.images.length > 0) ? updatedItem.images[0] : '';
@@ -1764,17 +1712,14 @@
               photoUrl = `${rawBase}/nofoto.jpg`;
             }
 
-            // Бот и Mini App строго из mysettings.js
             const botUsername = window.MY_SETTINGS.bot_username;
             const miniAppName = window.MY_SETTINGS.miniapp_name;
             const miniAppUrl = `https://t.me/${botUsername}/${miniAppName}?startapp=item_${updatedItem.id}`;
             
-            // Формирование ссылки заказа боту
             const userPrice = String(updatedItem.price || '').trim();
             const orderMsg = `Здравствуйте! Хочу сделать заказ: "${updatedItem.title}" по цене ${userPrice} ₽. Подскажите пожалуйста по срокам изготовления.`;
             const botOrderUrl = `https://t.me/${botUsername}?text=${encodeURIComponent(orderMsg)}`;
             
-            // Ссылка на сайт строго из mysettings.js
             const catalogBase = window.MY_SETTINGS.catalog_base_url;
             const browserCatalogUrl = `${catalogBase}/index.html?item=${updatedItem.id}`;
             const escapeHtml = (str) => String(str || '')
@@ -1925,8 +1870,8 @@
 
     async function saveProductsToGithub(message) {
       const token = tokenInput.value.trim();
-      const owner = ownerInput.value.trim();
-      const repo = repoInput.value.trim();
+      const owner = window.MY_SETTINGS.github_owner;
+      const repo = window.MY_SETTINGS.github_repo;
 
       const freshRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products.json?ref=main&t=${Date.now()}`, {
         headers: { 'Authorization': `Bearer ${token}` }

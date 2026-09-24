@@ -3,6 +3,10 @@
 // ==========================================
 
 window.MY_SETTINGS = {
+  // Привязка GitHub (для работы базы данных и загрузки картинок)
+  github_owner: "aleksey998",
+  github_repo: "catalog3dfortest",
+
   // Юзернейм Telegram-бота для заказов (кнопка "заказать в телеграмм")
   bot_username: "pogodin_3d_bot",
 
