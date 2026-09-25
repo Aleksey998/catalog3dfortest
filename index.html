@@ -1015,34 +1015,39 @@
         currentCategory = urlParams.get('cat').trim();
       }
 
-      // 2. Бронебойный перехват Telegram Mini App
+            // 2. Бронебойный перехват Telegram Mini App
       if (!singleItemId) {
+        let appParam = '';
+
         // Вариант А: из нативного SDK Telegram WebApp
         if (window.Telegram && window.Telegram.WebApp) {
           try {
             window.Telegram.WebApp.ready();
-            const startParam = window.Telegram.WebApp.initDataUnsafe?.start_param;
-            if (startParam) {
-              // Убираем item_ в начале и _from_channel (или любые хвосты) в конце
-              singleItemId = startParam.replace(/^item_/, '').replace(/_from_channel.*$/, '');
-            }
+            appParam = window.Telegram.WebApp.initDataUnsafe?.start_param || '';
           } catch (e) {
             console.warn('TG SDK error:', e);
           }
         }
 
-        // Вариант Б: из хэша адресной строки (tgWebAppStartParam=item_xxx)
-        if (!singleItemId && window.location.hash) {
+        // Вариант Б: из хэша адресной строки
+        if (!appParam && window.location.hash) {
           try {
-            const hashStr = window.location.hash.substring(1);
-            const hashParams = new URLSearchParams(hashStr);
-            const rawParam = hashParams.get('tgWebAppStartParam');
-            if (rawParam) {
-              // Убираем item_ в начале и _from_channel в конце
-              singleItemId = rawParam.replace(/^item_/, '').replace(/_from_channel.*$/, '');
-            }
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            appParam = hashParams.get('tgWebAppStartParam') || '';
           } catch (e) {
             console.warn('TG Hash parse error:', e);
+          }
+        }
+
+        // Если получен параметр запуска Mini App
+        if (appParam) {
+          // Если это ссылка на конкретный товар
+          if (appParam.startsWith('item_')) {
+            singleItemId = appParam.replace(/^item_/, '').replace(/_from_channel.*$/, '').trim();
+          } 
+          // Если это ссылка на раздел
+          else if (appParam.startsWith('cat_')) {
+            currentCategory = appParam.replace(/^cat_/, '').replace(/_from_channel.*$/, '').trim();
           }
         }
       }
