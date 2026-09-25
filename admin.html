@@ -1723,7 +1723,7 @@
 
             const botUsername = window.MY_SETTINGS.bot_username;
             const miniAppName = window.MY_SETTINGS.miniapp_name;
-            const miniAppUrl = `https://t.me/${botUsername}/${miniAppName}?startapp=item_${updatedItem.id}`;
+            const miniAppUrl = `https://t.me/${botUsername}/${miniAppName}?startapp=item_${updatedItem.id}_from_channel`;
             
             const userPrice = String(updatedItem.price || '').trim();
             const orderTemplate = window.MY_SETTINGS.order_message_template;
