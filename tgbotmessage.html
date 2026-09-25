@@ -259,9 +259,29 @@
       }
 
       const actualBot = (data.result.username || '').toLowerCase();
+      const botId = data.result.id;
 
+      // 1. Проверяем имя бота
       if (actualBot !== expectedBot) {
         targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Бот по токену (@${data.result.username}) не совпадает с указанным (@${window.MY_SETTINGS?.bot_username})</span>`;
+        return;
+      }
+
+      // 2. Проверяем, добавлен ли этот бот администратором в канал
+      let isBotAdminInChannel = false;
+      try {
+        const memberRes = await fetch(`https://api.telegram.org/bot${tgToken}/getChatMember?chat_id=${channelRaw}&user_id=${botId}`);
+        const memberData = await memberRes.json();
+        if (memberData.ok && memberData.result?.status === 'administrator') {
+          isBotAdminInChannel = true;
+        }
+      } catch (channelErr) {
+        console.warn('Ошибка проверки канала:', channelErr);
+      }
+
+      // 3. Выносим вердикт
+      if (!isBotAdminInChannel) {
+        targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Бот @${data.result.username} не назначен админом в канале ${channelRaw}</span>`;
         return;
       }
 
