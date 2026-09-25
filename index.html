@@ -1023,7 +1023,8 @@
             window.Telegram.WebApp.ready();
             const startParam = window.Telegram.WebApp.initDataUnsafe?.start_param;
             if (startParam) {
-              singleItemId = startParam.replace(/^item_/, '');
+              // Убираем item_ в начале и _from_channel (или любые хвосты) в конце
+              singleItemId = startParam.replace(/^item_/, '').replace(/_from_channel.*$/, '');
             }
           } catch (e) {
             console.warn('TG SDK error:', e);
@@ -1037,7 +1038,8 @@
             const hashParams = new URLSearchParams(hashStr);
             const rawParam = hashParams.get('tgWebAppStartParam');
             if (rawParam) {
-              singleItemId = rawParam.replace(/^item_/, '');
+              // Убираем item_ в начале и _from_channel в конце
+              singleItemId = rawParam.replace(/^item_/, '').replace(/_from_channel.*$/, '');
             }
           } catch (e) {
             console.warn('TG Hash parse error:', e);
