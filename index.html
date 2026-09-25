@@ -960,16 +960,46 @@
 
     async function initCatalog() {
 
-      // Подставляем ссылку на Telegram-канал из mysettings.js
+      // Подставляем ссылку на Telegram-канал из mysettings.js и настраиваем бронебойный клик
       const channelBtn = document.getElementById('channelLinkBtn');
       if (channelBtn && window.MY_SETTINGS && window.MY_SETTINGS.channel_username) {
-        const channelUrl = `https://t.me/${window.MY_SETTINGS.channel_username.replace('@', '')}`;
+        const targetChannel = window.MY_SETTINGS.channel_username.replace('@', '').trim().toLowerCase();
+        const channelUrl = `https://t.me/${targetChannel}`;
         channelBtn.href = channelUrl;
 
         channelBtn.addEventListener('click', (e) => {
-          if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.openTelegramLink === 'function') {
+          // Если открыто внутри Telegram Mini App
+          if (window.Telegram && window.Telegram.WebApp) {
             e.preventDefault();
-            window.Telegram.WebApp.openTelegramLink(channelUrl);
+
+            const tg = window.Telegram.WebApp;
+            const unsafe = tg.initDataUnsafe || {};
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // 1. Проверяем chat_type от самого Telegram
+            const isChannelType = unsafe.chat_type === 'channel';
+
+            // 2. Проверяем юзернейм чата, если он передан в объекте chat
+            const currentChatUser = (unsafe.chat?.username || '').replace('@', '').toLowerCase();
+            const isSameChannel = currentChatUser && currentChatUser === targetChannel;
+
+            // 3. Проверяем стартовый параметр или параметр ссылки (?from=channel или tgWebAppStartParam)
+            const isFromChannelParam = urlParams.get('from') === 'channel' || 
+                                       urlParams.get('mode') === 'channel' ||
+                                       (unsafe.start_param && unsafe.start_param.includes('channel'));
+
+            // Если хотя бы один фактор подтверждает, что мы поверх канала:
+            if (isChannelType || isSameChannel || isFromChannelParam) {
+              showToast('Вы уже находитесь в нашем канале! Просто смахните шторку вниз.');
+              return;
+            }
+
+            // Если открыто из другого места (из бота или лички) — переводим в канал
+            if (typeof tg.openTelegramLink === 'function') {
+              tg.openTelegramLink(channelUrl);
+            } else {
+              window.location.href = channelUrl;
+            }
           }
         });
       }
