@@ -254,7 +254,7 @@
       const data = await res.json();
 
       if (!data.ok || !data.result) {
-        targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Неверный токен Telegram-бота</span>`;
+        targetDesc.innerHTML = `<span class="tgpost-badge-warn">⚠️ Неверный токен Telegram-бота или нет связи</span>`;
         return;
       }
 
